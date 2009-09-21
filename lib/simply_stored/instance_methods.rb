@@ -22,6 +22,7 @@ module SimplyStored
     end
 
     def destroy
+      check_and_destroy_dependents
       CouchPotato.database.destroy_document(self)
     end
 
@@ -72,5 +73,19 @@ module SimplyStored
       attrs
     end
     
+    def check_and_destroy_dependents
+      self.class.properties.each do |property|
+        if property.respond_to?(:association?) and property.association?
+          next unless property.options[:dependent]
+          (send(property.name, :force_reload => true) || []).each do |dependent|
+            case property.options[:dependent]
+            when :destroy
+              dependent.destroy
+            else
+            end
+          end
+        end
+      end
+    end
   end
 end

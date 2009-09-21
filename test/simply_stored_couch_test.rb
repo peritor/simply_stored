@@ -8,6 +8,7 @@ class CouchTest < Test::Unit::TestCase
       User.find(:all).each(&:destroy)
       Post.find(:all).each(&:destroy)
       Category.find(:all).each(&:destroy)
+      Tag.find(:all).each(&:destroy)
     end
 
     context "when creating instances" do
@@ -296,6 +297,20 @@ class CouchTest < Test::Unit::TestCase
               user.remove_post('foo')
             end
           end
+          
+          should "delete the object when depending:destroy" do
+            Category.instance_eval do
+              has_many :tags, :dependent => :destroy
+            end
+            
+            category = Category.create(:name => "food")
+            tag = Tag.create(:name => "food", :category => category)
+            assert !tag.new?
+            category.remove_tag(tag)
+            
+            assert_equal [], Tag.find(:all)
+          end
+          
         end
         
         context "when removing all items" do
@@ -317,6 +332,22 @@ class CouchTest < Test::Unit::TestCase
             user.remove_all_posts
             assert_equal [], user.posts
             assert_equal [], user.instance_variable_get("@posts")
+          end
+        end
+        
+        context "with dependent destroy" do
+          should "delete relations when depending:destroy" do
+
+            Category.instance_eval do
+              has_many :tags, :dependent => :destroy
+            end
+            
+            category = Category.create(:name => "food")
+            tag = Tag.create(:name => "food", :category => category)
+            
+            assert_equal [tag], Tag.find(:all)
+            category.destroy
+            assert_equal [], Tag.find(:all)
           end
         end
       end

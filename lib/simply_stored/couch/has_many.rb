@@ -2,7 +2,7 @@ module SimplyStored
   module Couch
     module HasMany
       def has_many(name, options = {})
-        property name, :class => SimplyStored::Couch::HasMany::Property
+        property name, options.merge(:class => SimplyStored::Couch::HasMany::Property)
       end
 
       def define_has_many_getter(name)
@@ -33,8 +33,13 @@ module SimplyStored
           raise ArgumentError, "expected #{klass} got #{value.class}" unless value.is_a?(klass)
           raise ArgumentError, "cannot remove not mine" unless value.send(self.class.foreign_key.to_sym) == id
           
-          value.send("#{self.class.foreign_key}=", nil) 
-          value.save
+          if self.class._find_property(name).options[:dependent] == :destroy
+            value.destroy
+          else
+            value.send("#{self.class.foreign_key}=", nil) 
+            value.save
+          end
+          
           cached_version = instance_variable_get("@#{name}") || []
           instance_variable_set("@#{name}", cached_version.delete_if{|item| item.id == value.id})
         end
@@ -51,17 +56,17 @@ module SimplyStored
       end
       
       class Property
-        attr_reader :name
+        attr_reader :name, :options
         
         def initialize(owner_clazz, name, options = {})
-          @name = name
+          @name, @options = name, options
           owner_clazz.class_eval do
             def find_associated(from, to)
               CouchPotato.database.view(
                 self.class.get_class_from_name(from).send(
                   "association_#{from.to_s.singularize}_belongs_to_#{to.name.downcase}", :key => id))
             end unless instance_methods.grep(/^find_associated$/).any?
-            
+
             define_has_many_getter(name)
             define_has_many_setter_add(name)
             define_has_many_setter_remove(name)

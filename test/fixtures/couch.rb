@@ -29,3 +29,11 @@ class Category
   
   view :all, :key => :created_at
 end
+
+class Tag
+  include SimplyStored::Couch
+  
+  belongs_to :category
+  property :name
+  view :all, :key => :created_at
+end

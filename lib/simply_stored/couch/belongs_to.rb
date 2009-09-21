@@ -12,10 +12,10 @@ module SimplyStored
       end
 
       class Property #:nodoc:
-        attr_accessor :name
+        attr_accessor :name, :options
       
         def initialize(owner_clazz, name, options = {})
-          self.name = name
+          @name, @options = name, options
           item_class_name = self.item_class_name
           owner_clazz.class_eval do
             attr_reader "#{name}_id"

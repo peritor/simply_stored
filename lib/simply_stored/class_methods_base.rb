@@ -18,6 +18,10 @@ module SimplyStored
         @_accessible_attributes ||= []
         @_accessible_attributes += args.to_a
       end
+      
+      def _find_property(name)
+        properties.find{|property| property.name == name}
+      end
     end
   end
 end
