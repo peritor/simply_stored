@@ -88,6 +88,10 @@ module SimplyStored
         def supports_dirty?
           false
         end
+        
+        def association?
+          true
+        end
       end
     end
   end

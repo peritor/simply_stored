@@ -403,5 +403,42 @@ class CouchTest < Test::Unit::TestCase
         assert_match(/must be one of food, drinks, party/, category.errors.full_messages.first)
       end
     end
+    
+    context "when reloading an instance" do
+      should "reload new attributes from the database" do
+        user = User.create(:title => "Mr.", :name => "Host Master")
+        user2 = User.find(user.id)
+        user2.update_attributes(:title => "Mrs.", :name => "Hostess Masteress")
+        user.reload
+        assert_equal "Mrs.", user.title
+        assert_equal "Hostess Masteress", user.name
+      end
+      
+      should "not be dirty after reloading" do
+        user = User.create(:title => "Mr.", :name => "Host Master")
+        user2 = User.find(user.id)
+        user2.update_attributes(:title => "Mrs.", :name => "Hostess Masteress")
+        user.reload
+        assert !user.dirty?
+      end
+      
+      should "ensure that association caches for has_many are cleared" do
+        user = User.create(:title => "Mr.", :name => "Host Master")
+        post = Post.create(:user => user)
+        assert_equal 1, user.posts.size
+        assert_not_nil user.instance_variable_get("@posts")
+        user.reload
+        assert_nil user.instance_variable_get("@posts")
+      end
+      
+      should "ensure that association caches for belongs_to are cleared" do
+        user = User.create(:title => "Mr.", :name => "Host Master")
+        post = Post.create(:user => user)
+        post.user
+        assert_not_nil post.instance_variable_get("@user")
+        post.reload
+        assert_nil post.instance_variable_get("@user")
+      end
+    end
   end
 end

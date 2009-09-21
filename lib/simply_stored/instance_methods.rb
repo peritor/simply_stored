@@ -33,8 +33,26 @@ module SimplyStored
     def attributes=(attr)
       super(_remove_protected_attributes(attr))
     end
+
+    def reload
+      instance = self.class.find(_id)
+      instance.attributes.each do |attribute, value|
+        send "#{attribute}=", value
+      end
+      reset_dirty_attributes
+      reset_association_caches
+      self
+    end
     
     protected
+    
+    def reset_association_caches
+      self.class.properties.each do |property|
+        if property.respond_to?(:association?) && property.association?
+          instance_variable_set("@#{property.name}", nil)
+        end
+      end
+    end
     
     def _remove_protected_attributes(attrs)
       return {} if attrs.blank?

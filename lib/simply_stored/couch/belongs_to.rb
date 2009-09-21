@@ -73,6 +73,9 @@ module SimplyStored
           @name.to_s.camelize
         end
       
+        def association?
+          true
+        end
       end
     end
   end
