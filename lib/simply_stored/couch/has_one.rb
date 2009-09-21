@@ -12,10 +12,8 @@ module SimplyStored
           old_value = send("#{name}", :force_reload => true)
           if value.nil?
             instance_variable_set("@#{name}", nil)
-            instance_variable_set("@#{name}_id", nil)
           else
             instance_variable_set("@#{name}", value)
-            instance_variable_set("@#{name}_id", value.id)
             value.send("#{self.class.foreign_key}=", id)
             value.save
           end
@@ -49,7 +47,6 @@ module SimplyStored
           options = {:dependent => :nullify}.update(options)
           @name, @options = name, options
           owner_clazz.class_eval do
-            attr_reader "#{name}_id"
             define_has_one_getter(name)
             define_has_one_setter(name)
           end

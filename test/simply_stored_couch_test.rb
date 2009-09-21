@@ -5,10 +5,7 @@ class CouchTest < Test::Unit::TestCase
   context "A simply stored couch instance" do
     setup do
       CouchPotato::Config.database_name = 'simply_stored_test'
-      User.find(:all).each(&:destroy)
-      Post.find(:all).each(&:destroy)
-      Category.find(:all).each(&:destroy)
-      Tag.find(:all).each(&:destroy)
+      recreate_db
     end
 
     context "when creating instances" do
@@ -386,13 +383,6 @@ class CouchTest < Test::Unit::TestCase
           instance.identity
           CouchPotato.database.expects(:view).never
           instance.identity
-        end
-        
-        should "set store id of the foreign object when setting" do
-          instance = Instance.create
-          identity = Identity.create
-          instance.identity = identity
-          assert_equal identity.id, instance.identity_id
         end
         
         should "update the foreign object to have the owner's id in the forein key" do
