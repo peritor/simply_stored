@@ -28,7 +28,7 @@ module SimplyStored
           
             define_method "#{name}=" do |value|
               klass = self.class.get_class_from_name(name)
-              raise ArgumentError, "expected #{klass} got #{value.class}" unless value.is_a?(klass)
+              raise ArgumentError, "expected #{klass} got #{value.class}" unless value.nil? || value.is_a?(klass)
               
               instance_variable_set("@#{name}", value)
               if value.nil?

@@ -298,7 +298,7 @@ class CouchTest < Test::Unit::TestCase
             end
           end
           
-          should "delete the object when depending:destroy" do
+          should "delete the object when dependent:destroy" do
             Category.instance_eval do
               has_many :tags, :dependent => :destroy
             end
@@ -335,20 +335,140 @@ class CouchTest < Test::Unit::TestCase
           end
         end
         
-        context "with dependent destroy" do
-          should "delete relations when depending:destroy" do
-
+        context 'when destroying the parent objects' do
+          should "delete relations when dependent is destroy" do
             Category.instance_eval do
               has_many :tags, :dependent => :destroy
             end
-            
+          
             category = Category.create(:name => "food")
             tag = Tag.create(:name => "food", :category => category)
-            
+          
             assert_equal [tag], Tag.find(:all)
             category.destroy
             assert_equal [], Tag.find(:all)
           end
+        
+          should "nullify relations when dependent is nullify" do
+          
+            user = User.create(:title => "Mr.")
+            post = Post.create(:user => user)
+          
+            user.destroy
+            post = Post.find(post.id)
+            assert_nil post.user_id
+          end
+        end
+      end
+
+      context "with has_one" do
+        
+        should "add a getter method" do
+          assert Instance.new.respond_to?(:identity)
+        end
+        
+        should "fetch the object when invoking the getter" do
+          instance = Instance.create
+          identity = Identity.create(:instance => instance)
+          assert_equal identity, instance.identity
+        end
+        
+        should "store the fetched object into the cache" do
+          instance = Instance.create
+          identity = Identity.create(:instance => instance)
+          instance.identity
+          assert_equal identity, instance.instance_variable_get("@identity")
+        end
+        
+        should "not fetch from the database when object is in cache" do
+          instance = Instance.create
+          identity = Identity.create(:instance => instance)
+          instance.identity
+          CouchPotato.database.expects(:view).never
+          instance.identity
+        end
+        
+        should "set store id of the foreign object when setting" do
+          instance = Instance.create
+          identity = Identity.create
+          instance.identity = identity
+          assert_equal identity.id, instance.identity_id
+        end
+        
+        should "update the foreign object to have the owner's id in the forein key" do
+          instance = Instance.create
+          identity = Identity.create
+          instance.identity = identity
+          identity.reload
+          assert_equal instance.id, identity.instance_id
+        end
+        
+        should "update the cache when setting" do
+          instance = Instance.create
+          identity = Identity.create
+          instance.identity = identity
+          CouchPotato.expects(:database).never
+          assert_equal identity, instance.identity
+        end
+        
+        should "set the foreign key value to nil when assigning nil" do
+          instance = Instance.create
+          identity = Identity.create(:instance => instance)
+          instance.identity = nil
+          identity = Identity.find(identity.id)
+          assert_nil identity.instance_id
+        end
+        
+        should 'check the class' do
+          instance = Instance.create
+          assert_raise(ArgumentError, 'expected Item got String') do
+            instance.identity = 'foo'
+          end
+        end
+        
+        should 'delete the dependent objects when dependent is set to destroy' do
+          identity = Identity.create
+          mag = Magazine.create
+          mag.identity = identity
+          mag.identity = nil
+          assert_nil Identity.find(identity.id)
+        end
+        
+        should 'unset the id on the foreign object when a new object is set' do
+          instance = Instance.create
+          identity = Identity.create(:instance => instance)
+          identity2 = Identity.create
+          
+          instance.identity = identity2
+          identity = Identity.find(identity.id)
+          assert_nil identity.instance_id
+        end
+        
+        should 'delete the foreign object when a new object is set and dependent is set to destroy' do
+          identity = Identity.create
+          identity2 = Identity.create
+          mag = Magazine.create
+          mag.identity = identity
+          mag.identity = identity2
+          assert_nil Identity.find(identity.id)
+        end
+        
+        should 'delete the foreign object when parent is destroyed and dependent is set to destroy' do
+          identity = Identity.create
+          mag = Magazine.create
+          mag.identity = identity
+          
+          mag.destroy
+          assert_nil Identity.find(identity.id)
+        end
+        
+        should 'nullify the foreign objects foreign key when parent is destroyed' do
+          identity = Identity.create
+          instance = Instance.create
+          instance.identity = identity
+          instance.destroy
+          identity = Identity.find(identity.id)
+          assert_nil identity.instance_id
         end
       end
     end

@@ -37,3 +37,19 @@ class Tag
   property :name
   view :all, :key => :created_at
 end
+
+class Instance
+  include SimplyStored::Couch
+  has_one :identity
+end
+
+class Identity
+  include SimplyStored::Couch
+  belongs_to :instance
+  belongs_to :magazine
+end
+
+class Magazine
+  include SimplyStored::Couch
+  has_one :identity, :dependent => :destroy
+end

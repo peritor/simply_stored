@@ -9,6 +9,10 @@ module SimplyStored
         name.underscore.gsub('/','__').gsub('::','__') + "_id"
       end
       
+      def foreign_property
+        name.underscore.gsub('/','__').gsub('::','__')
+      end
+      
       def attr_protected(*args)
         @_protected_attributes ||= []
         @_protected_attributes += args.to_a

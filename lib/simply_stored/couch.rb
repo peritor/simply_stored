@@ -1,6 +1,7 @@
 require 'simply_stored/couch/validations'
 require 'simply_stored/couch/belongs_to'
 require 'simply_stored/couch/has_many'
+require 'simply_stored/couch/has_one'
 require 'simply_stored/couch/ext/couch_potato'
 
 module SimplyStored
@@ -22,6 +23,7 @@ module SimplyStored
       include SimplyStored::Couch::Validations
       include SimplyStored::Couch::BelongsTo
       include SimplyStored::Couch::HasMany
+      include SimplyStored::Couch::HasOne
       
       def create(attributes = {})
         instance = new(attributes)
