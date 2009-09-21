@@ -9,6 +9,15 @@ module SimplyStored
         name.underscore.gsub('/','__').gsub('::','__') + "_id"
       end
       
+      def attr_protected(*args)
+        @_protected_attributes ||= []
+        @_protected_attributes += args.to_a
+      end
+      
+      def attr_accessible(*args)
+        @_accessible_attributes ||= []
+        @_accessible_attributes += args.to_a
+      end
     end
   end
 end

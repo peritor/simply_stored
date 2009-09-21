@@ -4,6 +4,16 @@ module SimplyStored
       def has_many(name, options = {})
         property name, :class => SimplyStored::Couch::HasMany::Property
       end
+
+      def define_has_many_getter(name)
+        define_method(name) do |*args|
+          forced_reload = args.first && args.first.is_a?(Hash) && args.first[:force_reload]
+          if forced_reload || instance_variable_get("@#{name}").nil?
+            instance_variable_set("@#{name}", find_associated(name, self.class))
+          end
+          instance_variable_get("@#{name}")
+        end
+      end
       
       def define_has_many_setter_add(name)
         define_method("add_#{name.to_s.singularize}") do |value|
@@ -52,14 +62,7 @@ module SimplyStored
                   "association_#{from.to_s.singularize}_belongs_to_#{to.name.downcase}", :key => id))
             end unless instance_methods.grep(/^find_associated$/).any?
             
-            define_method(name) do |*args|
-              forced_reload = args.first && args.first.is_a?(Hash) && args.first[:force_reload]
-              if forced_reload || instance_variable_get("@#{name}").nil?
-                instance_variable_set("@#{name}", find_associated(name, owner_clazz))
-              end
-              instance_variable_get("@#{name}")
-            end
-            
+            define_has_many_getter(name)
             define_has_many_setter_add(name)
             define_has_many_setter_remove(name)
             define_has_many_setter_remove_all(name)

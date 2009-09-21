@@ -11,32 +11,9 @@ module SimplyStored
         include InstanceMethods
         extend ClassMethods
       end
-    end
-    
-    module InstanceMethods
-      def ==(other)
-        other._id == _id && other._rev == _rev
-      end
-
-      def eql?(other)
-        self.==(other)
-      end
-
-      def save(validate = true)
-        CouchPotato.database.save_document(self)
-      end
-
-      def save!
-        CouchPotato.database.save_document!(self)
-      end
-
-      def destroy
-        CouchPotato.database.destroy_document(self)
-      end
-
-      def update_attributes(attributes = {})
-        self.attributes = attributes
-        save
+      
+      clazz.instance_eval do
+        attr_accessor :_accessible_attributes, :_protected_attributes
       end
     end
     

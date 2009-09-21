@@ -22,5 +22,8 @@ class Category
   include SimplyStored::Couch
 
   property :name
+  property :alias
+  property :parent
+  
   validates_inclusion_of :name, :in => ["food", "drinks", "party"]
 end
