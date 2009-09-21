@@ -7,6 +7,7 @@ class CouchTest < Test::Unit::TestCase
       CouchPotato::Config.database_name = 'simply_stored_test'
       User.find(:all).each(&:destroy)
       Post.find(:all).each(&:destroy)
+      Category.find(:all).each(&:destroy)
     end
 
     context "when creating instances" do

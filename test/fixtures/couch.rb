@@ -26,4 +26,6 @@ class Category
   property :parent
   
   validates_inclusion_of :name, :in => ["food", "drinks", "party"]
+  
+  view :all, :key => :created_at
 end
