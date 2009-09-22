@@ -587,6 +587,11 @@ class CouchTest < Test::Unit::TestCase
         category.valid?
         assert_match(/must be one or more of food, drinks, party/, category.errors.full_messages.first)
       end
+      
+      should "allow blank" do
+        category = Category.new(:name => nil)
+        assert category.valid?
+      end
     end
     
     context "when reloading an instance" do

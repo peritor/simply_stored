@@ -25,7 +25,7 @@ class Category
   property :alias
   property :parent
   
-  validates_inclusion_of :name, :in => ["food", "drinks", "party"]
+  validates_inclusion_of :name, :in => ["food", "drinks", "party"], :allow_blank => true
   
   view :all, :key => :created_at
 end
