@@ -547,6 +547,13 @@ class CouchTest < Test::Unit::TestCase
         assert !category.save
       end
       
+      should "validate when the attribute is an array" do
+        category = Category.new(:name => ['food'])
+        assert_nothing_raised do
+          category.save!
+        end
+      end
+      
       should "add an error message" do
         category = Category.new(:name => "other")
         category.valid?

@@ -5,7 +5,9 @@ module SimplyStored
         required_option :in
 
         def valid?(instance)
-          self.in.include?(instance.send(attribute))
+          values = instance.send(attribute)
+          values = [values] unless values.is_a?(Array)
+          self.in & values == values
         end
 
         def message(instance)

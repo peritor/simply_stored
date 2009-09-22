@@ -25,6 +25,7 @@ module SimplyStored
       check_and_destroy_dependents
       CouchPotato.database.destroy_document(self)
     end
+    alias :delete :destroy
 
     def update_attributes(attributes = {})
       self.attributes = attributes

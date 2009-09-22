@@ -15,6 +15,8 @@ module SimplyStored
       
       clazz.instance_eval do
         attr_accessor :_accessible_attributes, :_protected_attributes
+        alias :simpledb_array :simpledb_string
+        alias :simpledb_integer :simpledb_string
       end
     end
     
@@ -38,6 +40,32 @@ module SimplyStored
         else
           CouchPotato.database.load_document(what)
         end
+      end
+      
+      def simpledb_string(*names)
+        names.each do |name|
+          property name
+        end
+      end
+      
+      def simpledb_timestamp(*names)
+        names.each do |name|
+          property name, :type => Time
+        end
+      end
+      
+      def require_attributes(*names)
+        names.each do |name|
+          validates_presence_of name
+        end
+      end
+
+      def require_inclusion_of(name, valid_set, options = {})
+        validates_inclusion_of(name, :in => valid_set)
+      end
+      
+      def require_format_of(attr, valid_regex, options = {})
+        validates_format_of(attr, :with => valid_regex)
       end
       
       def method_missing(name, *args)
