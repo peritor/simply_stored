@@ -40,6 +40,7 @@ module SimplyStored
       instance.attributes.each do |attribute, value|
         send "#{attribute}=", value
       end
+      self._rev = instance._rev
       reset_dirty_attributes
       reset_association_caches
       self

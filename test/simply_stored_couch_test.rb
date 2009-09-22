@@ -589,6 +589,14 @@ class CouchTest < Test::Unit::TestCase
         post.reload
         assert_nil post.instance_variable_get("@user")
       end
+      
+      should "update the revision" do
+        user = User.create(:title => "Mr.", :name => "Host Master")
+        user2 = User.find(user.id)
+        user2.update_attributes(:title => "Mrs.", :name => "Hostess Masteress")
+        user.reload
+        assert_equal user._rev, user2._rev
+      end
     end
   end
 end
