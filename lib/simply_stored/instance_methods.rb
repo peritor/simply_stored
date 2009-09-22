@@ -14,7 +14,7 @@ module SimplyStored
     end
 
     def save(validate = true)
-      CouchPotato.database.save_document(self)
+      CouchPotato.database.save_document(self, validate)
     end
 
     def save!

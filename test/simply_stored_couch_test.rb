@@ -37,6 +37,15 @@ class CouchTest < Test::Unit::TestCase
           end
         end
       end
+      
+      context "when using save(false)" do
+        should "not run the validations" do
+          user = User.new
+          user.save(false)
+          assert !user.new?
+          assert !user.dirty?
+        end
+      end
     end
     
     context "when destroying an instance" do
