@@ -73,11 +73,13 @@ module SimplyStored
       end
 
       def require_inclusion_of(name, valid_set, options = {})
-        validates_inclusion_of(name, :in => valid_set)
+        options.update(:in => valid_set)
+        validates_inclusion_of(name, options)
       end
       
       def require_format_of(attr, valid_regex, options = {})
-        validates_format_of(attr, :with => valid_regex)
+        options.update(:with => valid_regex)
+        validates_format_of(attr, options)
       end
       
       def method_missing(name, *args)

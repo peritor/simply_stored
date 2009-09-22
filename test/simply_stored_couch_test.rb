@@ -593,27 +593,81 @@ class CouchTest < Test::Unit::TestCase
     end
 
     context "with additional validations" do
-      should "validate inclusion of an attribute in an array" do
-        category = Category.new(:name => "other")
-        assert !category.save
-      end
+      context "with validates_inclusion_of" do
+        should "validate inclusion of an attribute in an array" do
+          category = Category.new(:name => "other")
+          assert !category.save
+        end
       
-      should "validate when the attribute is an array" do
-        category = Category.new(:name => ['drinks', 'food'])
-        assert_nothing_raised do
-          category.save!
+        should "validate when the attribute is an array" do
+          category = Category.new(:name => ['drinks', 'food'])
+          assert_nothing_raised do
+            category.save!
+          end
+        end
+      
+        should "add an error message" do
+          category = Category.new(:name => "other")
+          category.valid?
+          assert_match(/must be one or more of food, drinks, party/, category.errors.full_messages.first)
+        end
+      
+        should "allow blank" do
+          category = Category.new(:name => nil)
+          assert category.valid?
         end
       end
       
-      should "add an error message" do
-        category = Category.new(:name => "other")
-        category.valid?
-        assert_match(/must be one or more of food, drinks, party/, category.errors.full_messages.first)
-      end
-      
-      should "allow blank" do
-        category = Category.new(:name => nil)
-        assert category.valid?
+      context "with validates_format_of" do
+        class ValidatedUser
+          include SimplyStored::Couch
+          property :name
+          validates_format_of :name, :with => /Paul/
+        end
+        
+        should 'validate the format and fail when not matched' do
+          user = ValidatedUser.new(:name => "John")
+          assert !user.valid?
+        end
+        
+        should 'succeed when matched' do
+          user = ValidatedUser.new(:name => "Paul")
+          assert user.valid?
+        end
+        
+        should 'fail when empty' do
+          user = ValidatedUser.new(:name => nil)
+          assert !user.valid?
+        end
+        
+        context "with allow_blank" do
+          class ValidatedBlankUser
+            include SimplyStored::Couch
+            property :name
+            validates_format_of :name, :with => /Paul/, :allow_blank => true
+          end
+          
+          should 'not fail when nil' do
+            user = ValidatedBlankUser.new(:name => nil)
+            assert user.valid?
+          end
+
+          should 'not fail when empty string' do
+            user = ValidatedBlankUser.new(:name => '')
+            assert user.valid?
+          end
+
+          should 'fail when not matching' do
+            user = ValidatedBlankUser.new(:name => 'John')
+            assert !user.valid?
+          end
+
+          should 'not fail when matching' do
+            user = ValidatedBlankUser.new(:name => 'Paul')
+            assert user.valid?
+          end
+
+        end
       end
     end
     
