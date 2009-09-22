@@ -17,6 +17,8 @@ module SimplyStored
         attr_accessor :_accessible_attributes, :_protected_attributes
         alias :simpledb_array :simpledb_string
         alias :simpledb_integer :simpledb_string
+        
+        view :all_documents, :key => :created_at
       end
     end
     
@@ -36,10 +38,20 @@ module SimplyStored
       def find(*args)
         case what = args.pop
         when :all
-          CouchPotato.database.view(all, *args)
+          CouchPotato.database.view(all_documents(*args))
+        when :first
+          CouchPotato.database.view(all_documents(:limit => 1)).first
         else
           CouchPotato.database.load_document(what)
         end
+      end
+      
+      def all
+        find(:all)
+      end
+      
+      def first
+        find(:first)
       end
       
       def simpledb_string(*names)

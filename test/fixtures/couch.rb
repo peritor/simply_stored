@@ -6,8 +6,6 @@ class User
   property :title
   property :homepage
   
-  view :all, :key => :created_at
-  
   has_many :posts
 end
 
@@ -15,7 +13,6 @@ class Post
   include SimplyStored::Couch
   
   belongs_to :user
-  view :all, :key => :created_at
 end
 
 class Category
@@ -26,8 +23,6 @@ class Category
   property :parent
   
   validates_inclusion_of :name, :in => ["food", "drinks", "party"], :allow_blank => true
-  
-  view :all, :key => :created_at
 end
 
 class Tag
@@ -35,7 +30,6 @@ class Tag
   
   belongs_to :category
   property :name
-  view :all, :key => :created_at
 end
 
 class Instance

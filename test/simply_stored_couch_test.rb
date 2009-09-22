@@ -72,11 +72,34 @@ class CouchTest < Test::Unit::TestCase
     end
     
     context "when finding instances" do
-      context "when find(:all)" do
+      context "with find(:all)" do
         should "return all instances" do
           User.create(:title => "Mr.")
           User.create(:title => "Mrs.")
           assert_equal 2, User.find(:all).size
+        end
+      end
+
+      context "to find all instances" do
+        should 'generate a default find_all view' do
+          assert User.respond_to?(:all_documents)
+        end
+        
+        should 'return all the users when calling all' do
+          User.create(:title => "Mr.")
+          User.create(:title => "Mrs.")
+          assert_equal 2, User.all.size
+        end
+      end
+      
+      context "to find one instance" do
+        should 'return one user when calling first' do
+          user = User.create(:title => "Mr.")
+          assert_equal user, User.first
+        end
+        
+        should 'return nil when no user found' do
+          assert_nil User.first
         end
       end
       
