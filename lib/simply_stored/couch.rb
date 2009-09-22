@@ -75,11 +75,25 @@ module SimplyStored
           puts "Warning: Defining view #{view_name} at call time, please add it to the class body. (Called from #{caller[0]})"
           view view_name, :key => keys
           self.class.instance_eval do
-            define_method(name) do
+            define_method(name) do 
+              CouchPotato.database.view(send(view_name, :key => args, :limit => 1)).first
+            end
+          end
+          
+          send(name, args)
+        elsif name.to_s =~ /^find_all_by/
+          keys = name.to_s.gsub(/^find_all_by_/, "").split("_and_")
+          view_name = name.to_s.gsub(/^find_/, "").to_sym
+          puts "Warning: Defining view #{view_name} at call time, please add it to the class body. (Called from #{caller[0]})"
+          view view_name, :key => keys
+          self.class.instance_eval do
+            define_method(name) do 
               CouchPotato.database.view(send(view_name, :key => args))
             end
           end
+
           send(name, args)
+        
         else
           super
         end

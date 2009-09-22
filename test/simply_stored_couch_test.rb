@@ -99,10 +99,38 @@ class CouchTest < Test::Unit::TestCase
           assert User.respond_to?(:find_by_title)
         end
         
-        should "call the generated view" do
-          assert_difference 'User.find_by_homepage("http://www.peritor.com").size' do
-            User.create(:homepage => "http://www.peritor.com", :title => "Mr.")
-          end
+        should "call the generated view and return the result" do
+          user = User.create(:homepage => "http://www.peritor.com", :title => "Mr.")
+          assert_equal user, User.find_by_homepage("http://www.peritor.com")
+        end
+        
+        should 'find only one instance when using find_by' do
+          User.create(:title => "Mr.")
+          assert User.find_by_title("Mr.").is_a?(User)
+        end
+      end
+      
+      context "with a find_all_by prefix" do
+        should "create a view for the called finder" do
+          User.find_all_by_name("joe")
+          assert User.respond_to?(:all_by_name)
+        end
+        
+        should "create a method to prevent future loops through method_missing" do
+          assert !User.respond_to?(:find_all_by_title)
+          User.find_all_by_title("Mr.")
+          assert User.respond_to?(:find_all_by_title)
+        end
+        
+        should "call the generated view and return the result" do
+          user = User.create(:homepage => "http://www.peritor.com", :title => "Mr.")
+          assert_equal [user], User.find_all_by_homepage("http://www.peritor.com")
+        end
+        
+        should 'find all instance when using find_all_by' do
+          User.create(:title => "Mr.")
+          User.create(:title => "Mr.")
+          assert_equal 2, User.find_all_by_title("Mr.").size
         end
       end
     end
@@ -548,7 +576,7 @@ class CouchTest < Test::Unit::TestCase
       end
       
       should "validate when the attribute is an array" do
-        category = Category.new(:name => ['food'])
+        category = Category.new(:name => ['drinks', 'food'])
         assert_nothing_raised do
           category.save!
         end
@@ -557,7 +585,7 @@ class CouchTest < Test::Unit::TestCase
       should "add an error message" do
         category = Category.new(:name => "other")
         category.valid?
-        assert_match(/must be one of food, drinks, party/, category.errors.full_messages.first)
+        assert_match(/must be one or more of food, drinks, party/, category.errors.full_messages.first)
       end
     end
     

@@ -101,7 +101,7 @@ module SimplyStored
     def find_associated(from, to, options = {})
       CouchPotato.database.view(
         self.class.get_class_from_name(from).send(
-          "association_#{from.to_s.singularize}_belongs_to_#{to.name.downcase}", :key => id))
+          "association_#{from.to_s.singularize.underscore}_belongs_to_#{to.name.downcase}", :key => id))
     end
     
   end

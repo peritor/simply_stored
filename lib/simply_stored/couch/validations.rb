@@ -7,11 +7,13 @@ module SimplyStored
         def valid?(instance)
           values = instance.send(attribute)
           values = [values] unless values.is_a?(Array)
-          self.in & values == values
+          values.select{|value|
+            !self.in.include?(value)
+          }.empty?
         end
 
         def message(instance)
-          super || "must be one of #{self.in.join(", ")}"
+          super || "must be one or more of #{self.in.join(", ")}"
         end
       end
   

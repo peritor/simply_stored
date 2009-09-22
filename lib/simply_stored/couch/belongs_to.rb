@@ -4,7 +4,7 @@ module SimplyStored
     module BelongsTo
       
       def belongs_to(name)
-        view "association_#{self.name.downcase}_belongs_to_#{name}",
+        view "association_#{self.name.underscore}_belongs_to_#{name}",
              :map => "function(doc) { if (doc['#{name.to_s}_id'] != null) { log(doc); emit(doc.#{name.to_s}_id, null) }}",
              :type => "custom",
              :include_docs => true
