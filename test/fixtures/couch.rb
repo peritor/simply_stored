@@ -7,6 +7,8 @@ class User
   property :homepage
   
   has_many :posts
+  
+  view :by_name_and_created_at, :key => [:name, :created_at]
 end
 
 class Post

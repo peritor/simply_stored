@@ -116,6 +116,11 @@ class CouchTest < Test::Unit::TestCase
           assert User.respond_to?(:by_name)
         end
         
+        should 'not create the view when it already exists' do
+          User.expects(:view).never
+          User.find_by_name_and_created_at("joe")
+        end
+        
         should "create a method to prevent future loops through method_missing" do
           assert !User.respond_to?(:find_by_title)
           User.find_by_title("Mr.")
@@ -136,7 +141,12 @@ class CouchTest < Test::Unit::TestCase
       context "with a find_all_by prefix" do
         should "create a view for the called finder" do
           User.find_all_by_name("joe")
-          assert User.respond_to?(:all_by_name)
+          assert User.respond_to?(:by_name)
+        end
+        
+        should 'not create the view when it already exists' do
+          User.expects(:view).never
+          User.find_all_by_name_and_created_at("joe")
         end
         
         should "create a method to prevent future loops through method_missing" do

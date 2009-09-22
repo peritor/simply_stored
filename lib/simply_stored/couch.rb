@@ -86,8 +86,10 @@ module SimplyStored
         if name.to_s =~ /^find_by/
           keys = name.to_s.gsub(/^find_by_/, "").split("_and_")
           view_name = name.to_s.gsub(/^find_/, "").to_sym
-          puts "Warning: Defining view #{view_name} at call time, please add it to the class body. (Called from #{caller[0]})"
-          view view_name, :key => keys
+          unless respond_to?(view_name)
+            puts "Warning: Defining view #{view_name} at call time, please add it to the class body. (Called from #{caller[0]})"
+            view(view_name, :key => keys) 
+          end
           self.class.instance_eval do
             define_method(name) do 
               CouchPotato.database.view(send(view_name, :key => args, :limit => 1)).first
@@ -97,9 +99,11 @@ module SimplyStored
           send(name, args)
         elsif name.to_s =~ /^find_all_by/
           keys = name.to_s.gsub(/^find_all_by_/, "").split("_and_")
-          view_name = name.to_s.gsub(/^find_/, "").to_sym
-          puts "Warning: Defining view #{view_name} at call time, please add it to the class body. (Called from #{caller[0]})"
-          view view_name, :key => keys
+          view_name = name.to_s.gsub(/^find_all_/, "").to_sym
+          unless respond_to?(view_name)
+            puts "Warning: Defining view #{view_name} at call time, please add it to the class body. (Called from #{caller[0]})"
+            view(view_name, :key => keys) 
+          end
           self.class.instance_eval do
             define_method(name) do 
               CouchPotato.database.view(send(view_name, :key => args))
