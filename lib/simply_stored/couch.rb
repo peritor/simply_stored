@@ -43,7 +43,7 @@ module SimplyStored
         when :first
           CouchPotato.database.view(all_documents(:limit => 1)).first
         else
-          CouchPotato.database.load_document(what)
+          CouchPotato.database.load_document(what) || raise(SimplyStored::RecordNotFound)
         end
       end
       

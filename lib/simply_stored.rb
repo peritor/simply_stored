@@ -7,4 +7,5 @@ require File.expand_path(File.dirname(__FILE__) + '/simply_stored/couch')
 
 module SimplyStored
   class Error < RuntimeError; end
+  class RecordNotFound < RuntimeError; end
 end

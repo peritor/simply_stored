@@ -108,6 +108,12 @@ class CouchTest < Test::Unit::TestCase
           user = User.create(:title => "Mr.")
           assert User.find(user.id).kind_of?(User)
         end
+        
+        should 'raise an error when no record was found' do
+          assert_raises(SimplyStored::RecordNotFound) do
+            User.find('abc')
+          end
+        end
       end
       
       context "with a find_by prefix" do
@@ -491,7 +497,7 @@ class CouchTest < Test::Unit::TestCase
           mag = Magazine.create
           mag.identity = identity
           mag.identity = nil
-          assert_nil Identity.find(identity.id)
+          assert_nil Identity.find_by_id(identity.id)
         end
         
         should 'unset the id on the foreign object when a new object is set' do
@@ -510,7 +516,7 @@ class CouchTest < Test::Unit::TestCase
           mag = Magazine.create
           mag.identity = identity
           mag.identity = identity2
-          assert_nil Identity.find(identity.id)
+          assert_nil Identity.find_by_id(identity.id)
         end
         
         should 'delete the foreign object when parent is destroyed and dependent is set to destroy' do
@@ -519,7 +525,7 @@ class CouchTest < Test::Unit::TestCase
           mag.identity = identity
           
           mag.destroy
-          assert_nil Identity.find(identity.id)
+          assert_nil Identity.find_by_id(identity.id)
         end
         
         should 'nullify the foreign objects foreign key when parent is destroyed' do
