@@ -1,0 +1,1 @@
+require 'simply_stored/couch/views/array_property_view_spec'

@@ -3,6 +3,7 @@ require 'simply_stored/couch/belongs_to'
 require 'simply_stored/couch/has_many'
 require 'simply_stored/couch/has_one'
 require 'simply_stored/couch/ext/couch_potato'
+require 'simply_stored/couch/views'
 
 module SimplyStored
   module Couch
@@ -88,30 +89,37 @@ module SimplyStored
           view_name = name.to_s.gsub(/^find_/, "").to_sym
           unless respond_to?(view_name)
             puts "Warning: Defining view #{view_name} at call time, please add it to the class body. (Called from #{caller[0]})"
-            view(view_name, :key => keys) 
+            view_keys = keys.length == 1 ? keys.first : keys
+            view(view_name, :key => view_keys)
           end
           self.class.instance_eval do
-            define_method(name) do 
-              CouchPotato.database.view(send(view_name, :key => args, :limit => 1)).first
+            define_method(name) do |*key_args|
+              if keys.length == 1
+                key_args = key_args.first
+              end 
+              CouchPotato.database.view(send(view_name, :key => key_args, :limit => 1, :include_docs => true)).first
             end
           end
           
-          send(name, args)
+          send(name, *args)
         elsif name.to_s =~ /^find_all_by/
           keys = name.to_s.gsub(/^find_all_by_/, "").split("_and_")
           view_name = name.to_s.gsub(/^find_all_/, "").to_sym
           unless respond_to?(view_name)
             puts "Warning: Defining view #{view_name} at call time, please add it to the class body. (Called from #{caller[0]})"
-            view(view_name, :key => keys) 
+            view_keys = keys.length == 1 ? keys.first : keys
+            view(view_name, :key => view_keys)
           end
           self.class.instance_eval do
-            define_method(name) do 
-              CouchPotato.database.view(send(view_name, :key => args))
+            define_method(name) do |*key_args|
+              if keys.length == 1
+                key_args = key_args.first
+              end
+              CouchPotato.database.view(send(view_name, :key => key_args, :include_docs => true))
             end
           end
 
-          send(name, args)
-        
+          send(name, *args)
         else
           super
         end
