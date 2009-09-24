@@ -29,6 +29,7 @@ module SimplyStored
       include SimplyStored::Couch::BelongsTo
       include SimplyStored::Couch::HasMany
       include SimplyStored::Couch::HasOne
+      include SimplyStored::Storage::ClassMethods
       
       def create(attributes = {})
         instance = new(attributes)

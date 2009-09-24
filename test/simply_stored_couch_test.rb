@@ -731,5 +731,167 @@ class CouchTest < Test::Unit::TestCase
         assert_equal user._rev, user2._rev
       end
     end
+    
+    context "with s3 interaction" do
+      setup do
+        LogItem.instance_variable_set(:@_s3_connection, nil)
+        
+        bucket = stub(:bckt) do
+          stubs(:put).returns(true)
+          stubs(:get).returns(true)
+        end
+        
+        @bucket = bucket
+        
+        @s3 = stub(:s3) do
+          stubs(:bucket).returns(bucket)
+        end
+        
+        RightAws::S3.stubs(:new).returns @s3
+        @log_item = LogItem.new
+      end
+
+      context "when saving the attachment" do
+        should "fetch the collection" do
+          @log_item.log_data = "Yay! It logged!"
+          RightAws::S3.expects(:new).with('abcdef', 'secret!', :multi_thread => true).returns(@s3)
+          @log_item.save
+        end
+      
+        should "upload the file" do
+          @log_item.log_data = "Yay! It logged!"
+          @bucket.expects(:put).with(anything, "Yay! It logged!", {}, anything)
+          @log_item.save
+        end
+      
+        should "use the specified bucket" do
+          @log_item.log_data = "Yay! It logged!"
+          LogItem._s3_options[:log_data][:bucket] = 'mybucket'
+          @s3.expects(:bucket).with('mybucket').returns(@bucket)
+          @log_item.save
+        end
+        
+        should "create the bucket if it doesn't exist" do
+          @log_item.log_data = "Yay! log me"
+          LogItem._s3_options[:log_data][:bucket] = 'mybucket'
+          
+          @s3.expects(:bucket).with('mybucket').returns(nil)
+          @s3.expects(:bucket).with('mybucket', true, 'private').returns(@bucket)
+          @log_item.save
+        end
+        
+        should "raise an error if the bucket is not ours" do
+          @log_item.log_data = "Yay! log me too"
+          LogItem._s3_options[:log_data][:bucket] = 'mybucket'
+          
+          @s3.expects(:bucket).with('mybucket').returns(nil)
+          @s3.expects(:bucket).with('mybucket', true, 'private').raises(RightAws::AwsError, 'BucketAlreadyExists: The requested bucket name is not available. The bucket namespace is shared by all users of the system. Please select a different name and try again')
+          
+          assert_raise(ArgumentError) do
+            @log_item.save
+          end
+        end
+      
+        should "not upload the attachment when it hasn't been changed" do
+          @bucket.expects(:put).never
+          @log_item.save
+        end
+      
+        should "set the permissions to private by default" do
+          class Item
+            include SimplyStored::Couch
+            has_s3_attachment :log_data, :bucket => 'mybucket'
+          end
+          @bucket.expects(:put).with(anything, anything, {}, 'private')
+          @log_item = Item.new
+          @log_item.log_data = 'Yay!'
+          @log_item.save
+        end
+      
+        should "set the permissions to whatever's specified in the options for the attachment" do
+          @log_item.save
+          old_perms = LogItem._s3_options[:log_data][:permissions]
+          LogItem._s3_options[:log_data][:permissions] = 'public-read'
+          @bucket.expects(:put).with(anything, anything, {}, 'public-read')
+          @log_item.log_data = 'Yay!'
+          @log_item.save
+          LogItem._s3_options[:log_data][:permissions] = old_perms
+        end
+      
+        should "use the full class name and the id as key" do
+          @log_item.save
+          @bucket.expects(:put).with("log_items/log_data/#{@log_item.id}", 'Yay!', {}, anything)
+          @log_item.log_data = 'Yay!'
+          @log_item.save
+        end
+      
+        should "mark the attachment as not dirty after uploading" do
+          @log_item.log_data = 'Yay!'
+          @log_item.save
+          assert !@log_item.instance_variable_get(:@_s3_attachments)[:log_data][:dirty]
+        end
+      
+        should 'store the attachment when the validations succeeded' do
+          @log_item.log_data = 'Yay!'
+          @log_item.stubs(:valid?).returns(true)
+          @bucket.expects(:put)
+          @log_item.save
+        end
+      
+        should "not store the attachment when the validations failed" do
+          @log_item.log_data = 'Yay!'
+          @log_item.stubs(:valid?).returns(false)
+          @bucket.expects(:put).never
+          @log_item.save
+        end
+      
+        should "save the attachment status" do
+          @log_item.save
+          @log_item.attributes["log_data_attachments"]
+        end
+      
+        should "save generate the url for the attachment" do
+          @log_item._s3_options[:log_data][:bucket] = 'bucket-for-monsieur'
+          @log_item._s3_options[:log_data][:permissions] = 'public-read'
+          @log_item.save
+          assert_equal "http://bucket-for-monsieur.s3.amazonaws.com/#{@log_item.s3_attachment_key(:log_data)}", @log_item.log_data_url
+        end
+      
+        should "add a short-lived access key for private attachments" do
+          @log_item._s3_options[:log_data][:permissions] = 'private'
+          @log_item.save
+          assert @log_item.log_data_url.include?("https://bucket-for-monsieur.s3.amazonaws.com:443/#{@log_item.s3_attachment_key(:log_data)}")
+          assert @log_item.log_data_url.include?("Signature=")
+          assert @log_item.log_data_url.include?("Expires=")
+        end
+      
+        should "serialize data other than strings to json" do
+          @log_item.log_data = ['one log entry', 'and another one']
+          @bucket.expects(:put).with(anything, '["one log entry","and another one"]', {}, anything)
+          @log_item.save
+        end
+      end
+    
+      context "when fetching the data" do
+        should "fetch the data from s3 and set the attachment attribute" do
+          @log_item.instance_variable_set(:@_s3_attachments, {})
+          @bucket.expects(:get).with("log_items/log_data/#{@log_item.id}").returns("Yay!")
+          assert_equal "Yay!", @log_item.log_data
+        end
+      
+        should "not mark the the attachment as dirty" do
+          @log_item.instance_variable_set(:@_s3_attachments, {})
+          @bucket.expects(:get).with("log_items/log_data/#{@log_item.id}").returns("Yay!")
+          @log_item.log_data
+          assert !@log_item._s3_attachments[:log_data][:dirty]
+        end
+        
+        should "not try to fetch the attachment if the value is already set" do
+          @log_item.log_data = "Yay!"
+          @bucket.expects(:get).never
+          assert_equal "Yay!", @log_item.log_data
+        end
+      end
+    end
   end
 end

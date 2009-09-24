@@ -49,3 +49,8 @@ class Magazine
   include SimplyStored::Couch
   has_one :identity, :dependent => :destroy
 end
+
+class LogItem
+  include SimplyStored::Couch
+  has_s3_attachment :log_data, :bucket => "bucket-for-monsieur", :access_key => 'abcdef', :secret_access_key => 'secret!'
+end
