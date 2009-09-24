@@ -44,6 +44,7 @@ module SimplyStored
         when :first
           CouchPotato.database.view(all_documents(:limit => 1)).first
         else
+          raise SimplyStored::Error, "Can't load record without an id" if what.nil?
           CouchPotato.database.load_document(what) || raise(SimplyStored::RecordNotFound)
         end
       end

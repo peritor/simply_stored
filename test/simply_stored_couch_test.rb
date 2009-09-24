@@ -114,6 +114,12 @@ class CouchTest < Test::Unit::TestCase
             User.find('abc')
           end
         end
+        
+        should 'raise an error when nil was specified' do
+          assert_raises(SimplyStored::Error) do
+            User.find(nil)
+          end
+        end
       end
       
       context "with a find_by prefix" do
