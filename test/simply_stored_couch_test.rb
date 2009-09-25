@@ -718,6 +718,7 @@ class CouchTest < Test::Unit::TestCase
         assert_not_nil user.instance_variable_get("@posts")
         user.reload
         assert_nil user.instance_variable_get("@posts")
+        assert_not_nil user.posts.first
       end
       
       should "ensure that association caches for belongs_to are cleared" do
@@ -727,6 +728,7 @@ class CouchTest < Test::Unit::TestCase
         assert_not_nil post.instance_variable_get("@user")
         post.reload
         assert_nil post.instance_variable_get("@user")
+        assert_not_nil post.user
       end
       
       should "update the revision" do

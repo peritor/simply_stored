@@ -22,7 +22,7 @@ module SimplyStored
             attr_accessor "#{name}_id_was"
             
             define_method name do
-              return instance_variable_get("@#{name}") if instance_variable_defined?("@#{name}")
+              return instance_variable_get("@#{name}") unless instance_variable_get("@#{name}").nil?
               instance_variable_set("@#{name}", send("#{name}_id") ? Object.const_get(item_class_name).find(send("#{name}_id")) : nil)
             end
           
