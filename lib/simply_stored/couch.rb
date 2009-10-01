@@ -1,3 +1,6 @@
+require 'couch_potato'
+
+require File.expand_path(File.dirname(__FILE__) + '/../simply_stored')
 require 'simply_stored/couch/validations'
 require 'simply_stored/couch/belongs_to'
 require 'simply_stored/couch/has_many'

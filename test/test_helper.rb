@@ -5,7 +5,7 @@ require 'mocha'
 require 'active_support'
 require 'active_support/testing/assertions'
 
-require File.expand_path(File.dirname(__FILE__) + '/../lib/simply_stored')
+require 'simply_stored/couch'
 
 class Test::Unit::TestCase
   include ActiveSupport::Testing::Assertions
