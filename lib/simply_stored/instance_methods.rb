@@ -24,6 +24,7 @@ module SimplyStored
     def destroy
       check_and_destroy_dependents
       CouchPotato.database.destroy_document(self)
+      freeze
     end
     alias :delete :destroy
 
