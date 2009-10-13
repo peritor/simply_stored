@@ -696,6 +696,35 @@ class CouchTest < Test::Unit::TestCase
 
         end
       end
+
+      context "with validates_uniqueness_of" do
+        should "add a view on the unique attribute" do
+          assert UniqueUser.by_name
+        end
+        
+        should "set an error when a different with the same instance exists" do
+          assert UniqueUser.create(:name => "Host Master")
+          user = UniqueUser.create(:name => "Host Master")
+          assert !user.valid?
+        end
+        
+        should "not have an error when we're the only one around" do
+          user = UniqueUser.create(:name => "Host Master")
+          assert !user.new_record?
+        end
+        
+        should "not have an error when it's the same instance" do
+          user = UniqueUser.create(:name => "Host Master")
+          user = UniqueUser.find(user.id)
+          assert user.valid?
+        end
+        
+        should 'have a nice error message' do
+          assert UniqueUser.create(:name => "Host Master")
+          user = UniqueUser.create(:name => "Host Master")
+          assert_equal "Name is already taken", user.errors.on(:name)
+        end
+      end
     end
     
     context "when reloading an instance" do
