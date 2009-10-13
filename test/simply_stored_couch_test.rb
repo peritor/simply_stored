@@ -55,6 +55,11 @@ class CouchTest < Test::Unit::TestCase
           user.destroy
         end
       end
+      
+      should 'return the frozen instance, brrrr' do
+        user = User.create(:title => "Mr")
+        assert_equal user, user.destroy
+      end
     end
     
     context "when updating attributes" do
