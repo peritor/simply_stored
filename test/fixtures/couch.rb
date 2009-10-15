@@ -54,3 +54,10 @@ class LogItem
   include SimplyStored::Couch
   has_s3_attachment :log_data, :bucket => "bucket-for-monsieur", :access_key => 'abcdef', :secret_access_key => 'secret!'
 end
+
+class UniqueUser
+  include SimplyStored::Couch
+  
+  property :name
+  validates_uniqueness_of :name
+end

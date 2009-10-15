@@ -36,12 +36,36 @@ module SimplyStored
         end
       end
   
+      class ValidatesUniquenessOf < ::Validatable::ValidationBase
+        def valid?(instance)
+          other_instance = instance.class.send("find_by_#{attribute}", instance.send(attribute))
+          if other_instance && other_instance != instance &&
+              other_instance.send(attribute) == instance.send(attribute)
+            false
+          else
+            true
+          end
+        end
+        
+        def message(instance)
+          super || "#{attribute.to_s.try(:humanize) || attribute.to_s} is already taken"
+        end
+      end
+      
       def validates_inclusion_of(*args)
         add_validations(args, ValidatesInclusionOf)
       end
       
       def validates_format_of(*args)
         add_validations(args, ValidatesFormatOf)
+      end
+      
+      def validates_uniqueness_of(*args)
+        args.each do |name|
+          view "by_#{name}", :key => name
+        end
+        
+        add_validations(args, ValidatesUniquenessOf)
       end
     end
   end

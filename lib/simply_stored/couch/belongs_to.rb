@@ -44,7 +44,7 @@ module SimplyStored
             end
             
             define_method "#{name}_changed?" do
-              !self.instance_variable_get("@#{name}_not_changed") && self.send(name) != self.send("#{name}_was")
+              self.send("#{name}_id") != self.send("#{name}_id_was")
             end
           end
         end
