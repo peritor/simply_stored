@@ -263,6 +263,24 @@ class CouchTest < Test::Unit::TestCase
           post.user
         end
 
+        should "know when the associated object changed" do
+          post = Post.create(:user => User.create(:title => "Mr."))
+          user2 = User.create(:title => "Mr.")
+          post.user = user2
+          assert post.user_changed?
+        end
+        
+        should "not be changed when an association has not changed" do
+          post = Post.create(:user => User.create(:title => "Mr."))
+          assert !post.user_changed?
+        end
+        
+        should "not be changed when assigned the same object" do
+          user = User.create(:title => "Mr.")
+          post = Post.create(:user => user)
+          post.user = user
+          assert !post.user_changed?
+        end
       end
       
       context "with has_many" do
