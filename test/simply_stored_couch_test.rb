@@ -125,6 +125,13 @@ class CouchTest < Test::Unit::TestCase
             User.find(nil)
           end
         end
+        
+        should 'raise an error when the record was not of the expected type' do
+          post = Post.create
+          assert_raises(SimplyStored::RecordNotFound) do
+            User.find(post.id)
+          end
+        end
       end
       
       context "with a find_by prefix" do
