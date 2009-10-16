@@ -17,6 +17,12 @@ class Post
   belongs_to :user
 end
 
+class Comment
+  include SimplyStored::Couch
+  
+  belongs_to :user
+end
+
 class Category
   include SimplyStored::Couch
 

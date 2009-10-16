@@ -308,6 +308,19 @@ class CouchTest < Test::Unit::TestCase
           user.posts
         end
         
+        should "only fetch objects of the correct type" do
+          user = User.create(:title => "Mr.")
+          post = Post.new
+          post.user = user
+          post.save!
+          
+          comment = Comment.new
+          comment.user = user
+          comment.save!
+          
+          assert_equal 1, user.posts.size
+        end
+        
         should "getter should user cache" do
           user = User.create(:title => "Mr.")
           post = Post.new
