@@ -211,7 +211,6 @@ class CouchTest < Test::Unit::TestCase
           user = User.create(:title => "Mr.")
           post = Post.create
           post.user = user
-          post.save
           assert post.dirty?
         end
         
@@ -279,6 +278,15 @@ class CouchTest < Test::Unit::TestCase
           user = User.create(:title => "Mr.")
           post = Post.create(:user => user)
           post.user = user
+          assert !post.user_changed?
+        end
+        
+        should "not be changed after saving" do
+          user = User.create(:title => "Mr.")
+          post = Post.new
+          post.user = user
+          assert post.user_changed?
+          post.save!
           assert !post.user_changed?
         end
       end

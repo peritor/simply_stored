@@ -55,7 +55,11 @@ module SimplyStored
         def dirty?(object)
           object.send("#{name}_id_was") != object.send("#{name}_id")
         end
-      
+        
+        def reset_dirty_attribute(object)
+          object.send("#{name}_id_was=", object.send("#{name}_id"))
+        end
+        
         def destroy(object)
         
         end
