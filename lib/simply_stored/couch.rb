@@ -64,6 +64,10 @@ module SimplyStored
         find(:first)
       end
       
+      def count
+        CouchPotato.database.view(all_documents(:reduce => true))
+      end
+      
       def simpledb_string(*names)
         names.each do |name|
           property name
@@ -92,43 +96,72 @@ module SimplyStored
         validates_format_of(attr, options)
       end
       
+      def _define_find_by(name, *args)
+        keys = name.to_s.gsub(/^find_by_/, "").split("_and_")
+        view_name = name.to_s.gsub(/^find_/, "").to_sym
+        unless respond_to?(view_name)
+          puts "Warning: Defining view #{self.name}##{view_name} at call time, please add it to the class body. (Called from #{caller[0]})"
+          view_keys = keys.length == 1 ? keys.first : keys
+          view(view_name, :key => view_keys)
+        end
+        (class << self; self end).instance_eval do
+          define_method(name) do |*key_args|
+            if keys.length == 1
+              key_args = key_args.first
+            end 
+            CouchPotato.database.view(send(view_name, :key => key_args, :limit => 1, :include_docs => true)).first
+          end
+        end
+        
+        send(name, *args)
+      end
+      
+      def _define_bind_all_by(name, *args)
+        keys = name.to_s.gsub(/^find_all_by_/, "").split("_and_")
+        view_name = name.to_s.gsub(/^find_all_/, "").to_sym
+        unless respond_to?(view_name)
+          puts "Warning: Defining view #{self.name}##{view_name} at call time, please add it to the class body. (Called from #{caller[0]})"
+          view_keys = keys.length == 1 ? keys.first : keys
+          view(view_name, :key => view_keys)
+        end
+        (class << self; self end).instance_eval do
+          define_method(name) do |*key_args|
+            if keys.length == 1
+              key_args = key_args.first
+            end
+            CouchPotato.database.view(send(view_name, :key => key_args, :include_docs => true))
+          end
+        end
+        send(name, *args)
+      end
+      
+      def _define_count_by(name, *args)
+        keys = name.to_s.gsub(/^count_by_/, "").split("_and_")
+        view_name = name.to_s.gsub(/^count_/, "").to_sym
+        unless respond_to?(view_name)
+          puts "Warning: Defining view #{self.name}##{view_name} at call time, please add it to the class body. (Called from #{caller[0]})"
+          view_keys = keys.length == 1 ? keys.first : keys
+          view(view_name, :key => view_keys)
+        end
+        (class << self; self end).instance_eval do
+          define_method("#{name}") do |*key_args|
+            if keys.length == 1
+              key_args = key_args.first
+            end
+            CouchPotato.database.view(send(view_name, :key => key_args, :reduce => true))
+          end
+        end
+      
+        send(name, *args)
+      end
+      
       def method_missing(name, *args)
         if name.to_s =~ /^find_by/
-          keys = name.to_s.gsub(/^find_by_/, "").split("_and_")
-          view_name = name.to_s.gsub(/^find_/, "").to_sym
-          unless respond_to?(view_name)
-            puts "Warning: Defining view #{view_name} at call time, please add it to the class body. (Called from #{caller[0]})"
-            view_keys = keys.length == 1 ? keys.first : keys
-            view(view_name, :key => view_keys)
-          end
-          self.class.instance_eval do
-            define_method(name) do |*key_args|
-              if keys.length == 1
-                key_args = key_args.first
-              end 
-              CouchPotato.database.view(send(view_name, :key => key_args, :limit => 1, :include_docs => true)).first
-            end
-          end
-          
-          send(name, *args)
+          _define_find_by(name, *args)
         elsif name.to_s =~ /^find_all_by/
-          keys = name.to_s.gsub(/^find_all_by_/, "").split("_and_")
-          view_name = name.to_s.gsub(/^find_all_/, "").to_sym
-          unless respond_to?(view_name)
-            puts "Warning: Defining view #{view_name} at call time, please add it to the class body. (Called from #{caller[0]})"
-            view_keys = keys.length == 1 ? keys.first : keys
-            view(view_name, :key => view_keys)
-          end
-          self.class.instance_eval do
-            define_method(name) do |*key_args|
-              if keys.length == 1
-                key_args = key_args.first
-              end
-              CouchPotato.database.view(send(view_name, :key => key_args, :include_docs => true))
-            end
-          end
-
-          send(name, *args)
+          _define_bind_all_by(name, *args)
+        elsif name.to_s =~ /^count_by/
+          _define_count_by(name, *args)
         else
           super
         end

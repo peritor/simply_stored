@@ -67,3 +67,15 @@ class UniqueUser
   property :name
   validates_uniqueness_of :name
 end
+
+class CountMe
+  include SimplyStored::Couch
+  
+  property :title
+end
+
+class DontCountMe
+  include SimplyStored::Couch
+  
+  property :title
+end

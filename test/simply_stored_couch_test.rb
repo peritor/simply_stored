@@ -174,9 +174,9 @@ class CouchTest < Test::Unit::TestCase
         end
         
         should "create a method to prevent future loops through method_missing" do
-          assert !User.respond_to?(:find_all_by_title)
-          User.find_all_by_title("Mr.")
-          assert User.respond_to?(:find_all_by_title)
+          assert !User.respond_to?(:find_all_by_foo_attribute)
+          User.find_all_by_foo_attribute("Mr.")
+          assert User.respond_to?(:find_all_by_foo_attribute)
         end
         
         should "call the generated view and return the result" do
@@ -184,12 +184,51 @@ class CouchTest < Test::Unit::TestCase
           assert_equal [user], User.find_all_by_homepage("http://www.peritor.com")
         end
         
-        should 'find all instance when using find_all_by' do
+        should 'find all instances when using find_all_by' do
           User.create(:title => "Mr.")
           User.create(:title => "Mr.")
           assert_equal 2, User.find_all_by_title("Mr.").size
         end
+      end      
+    end
+    
+    context "when counting" do
+      setup do
+        recreate_db
       end
+      
+      context "when counting all" do
+        should "return the number of objects in the database" do
+          CountMe.create(:title => "Mr.")
+          CountMe.create(:title => "Mrs.")
+          assert_equal 2, CountMe.find(:all).size
+          assert_equal 2, CountMe.count
+        end
+        
+        should "only count the correct class" do
+          CountMe.create(:title => "Mr.")
+          DontCountMe.create(:title => 'Foo')
+          assert_equal 1, CountMe.find(:all).size
+          assert_equal 1, CountMe.count
+        end
+      end
+      
+      context "when counting by prefix" do
+        should "return the number of matching objects" do
+          CountMe.create(:title => "Mr.")
+          CountMe.create(:title => "Mrs.")
+          assert_equal 1, CountMe.find_all_by_title('Mr.').size
+          assert_equal 1, CountMe.count_by_title('Mr.')
+        end
+        
+        should "only count the correct class" do
+          CountMe.create(:title => "Mr.")
+          DontCountMe.create(:title => 'Mr.')
+          assert_equal 1, CountMe.find_all_by_title('Mr.').size
+          assert_equal 1, CountMe.count_by_title('Mr.')
+        end
+      end
+      
     end
 
     context "with associations" do
