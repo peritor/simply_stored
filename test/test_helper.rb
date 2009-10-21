@@ -6,6 +6,10 @@ require 'active_support'
 require 'active_support/testing/assertions'
 
 require 'simply_stored/couch'
+require 'simply_stored/simpledb'
+
+$:.<< File.expand_path(File.dirname(__FILE__) + "/vendor/simplerdb-0.2/lib")
+$:.<< File.expand_path(File.dirname(__FILE__) + "/vendor/dhaka-2.2.1/lib")
 
 class Test::Unit::TestCase
   include ActiveSupport::Testing::Assertions

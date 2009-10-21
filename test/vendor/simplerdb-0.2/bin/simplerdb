@@ -1,0 +1,8 @@
+#!/usr/bin/env ruby
+
+require 'rubygems'
+require 'simplerdb/server'
+
+port = ARGV.size > 0 ? ARGV[0] : nil
+
+SimplerDB::Server.new(port).start

@@ -861,7 +861,7 @@ class CouchTest < Test::Unit::TestCase
     
     context "with s3 interaction" do
       setup do
-        LogItem.instance_variable_set(:@_s3_connection, nil)
+        CouchLogItem.instance_variable_set(:@_s3_connection, nil)
         
         bucket = stub(:bckt) do
           stubs(:put).returns(true)
@@ -875,7 +875,7 @@ class CouchTest < Test::Unit::TestCase
         end
         
         RightAws::S3.stubs(:new).returns @s3
-        @log_item = LogItem.new
+        @log_item = CouchLogItem.new
       end
 
       context "when saving the attachment" do
@@ -893,14 +893,14 @@ class CouchTest < Test::Unit::TestCase
       
         should "use the specified bucket" do
           @log_item.log_data = "Yay! It logged!"
-          LogItem._s3_options[:log_data][:bucket] = 'mybucket'
+          CouchLogItem._s3_options[:log_data][:bucket] = 'mybucket'
           @s3.expects(:bucket).with('mybucket').returns(@bucket)
           @log_item.save
         end
         
         should "create the bucket if it doesn't exist" do
           @log_item.log_data = "Yay! log me"
-          LogItem._s3_options[:log_data][:bucket] = 'mybucket'
+          CouchLogItem._s3_options[:log_data][:bucket] = 'mybucket'
           
           @s3.expects(:bucket).with('mybucket').returns(nil)
           @s3.expects(:bucket).with('mybucket', true, 'private').returns(@bucket)
@@ -909,7 +909,7 @@ class CouchTest < Test::Unit::TestCase
         
         should "raise an error if the bucket is not ours" do
           @log_item.log_data = "Yay! log me too"
-          LogItem._s3_options[:log_data][:bucket] = 'mybucket'
+          CouchLogItem._s3_options[:log_data][:bucket] = 'mybucket'
           
           @s3.expects(:bucket).with('mybucket').returns(nil)
           @s3.expects(:bucket).with('mybucket', true, 'private').raises(RightAws::AwsError, 'BucketAlreadyExists: The requested bucket name is not available. The bucket namespace is shared by all users of the system. Please select a different name and try again')
@@ -937,17 +937,17 @@ class CouchTest < Test::Unit::TestCase
       
         should "set the permissions to whatever's specified in the options for the attachment" do
           @log_item.save
-          old_perms = LogItem._s3_options[:log_data][:permissions]
-          LogItem._s3_options[:log_data][:permissions] = 'public-read'
+          old_perms = CouchLogItem._s3_options[:log_data][:permissions]
+          CouchLogItem._s3_options[:log_data][:permissions] = 'public-read'
           @bucket.expects(:put).with(anything, anything, {}, 'public-read')
           @log_item.log_data = 'Yay!'
           @log_item.save
-          LogItem._s3_options[:log_data][:permissions] = old_perms
+          CouchLogItem._s3_options[:log_data][:permissions] = old_perms
         end
       
         should "use the full class name and the id as key" do
           @log_item.save
-          @bucket.expects(:put).with("log_items/log_data/#{@log_item.id}", 'Yay!', {}, anything)
+          @bucket.expects(:put).with("couch_log_items/log_data/#{@log_item.id}", 'Yay!', {}, anything)
           @log_item.log_data = 'Yay!'
           @log_item.save
         end
@@ -1002,13 +1002,13 @@ class CouchTest < Test::Unit::TestCase
       context "when fetching the data" do
         should "fetch the data from s3 and set the attachment attribute" do
           @log_item.instance_variable_set(:@_s3_attachments, {})
-          @bucket.expects(:get).with("log_items/log_data/#{@log_item.id}").returns("Yay!")
+          @bucket.expects(:get).with("couch_log_items/log_data/#{@log_item.id}").returns("Yay!")
           assert_equal "Yay!", @log_item.log_data
         end
       
         should "not mark the the attachment as dirty" do
           @log_item.instance_variable_set(:@_s3_attachments, {})
-          @bucket.expects(:get).with("log_items/log_data/#{@log_item.id}").returns("Yay!")
+          @bucket.expects(:get).with("couch_log_items/log_data/#{@log_item.id}").returns("Yay!")
           @log_item.log_data
           assert !@log_item._s3_attachments[:log_data][:dirty]
         end

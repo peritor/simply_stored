@@ -1,0 +1,16 @@
+History.txt
+Manifest.txt
+README.txt
+Rakefile
+bin/simplerdb
+lib/simplerdb.rb
+lib/simplerdb/Rakefile
+lib/simplerdb/client_exception.rb
+lib/simplerdb/db.rb
+lib/simplerdb/query_language.rb
+lib/simplerdb/servlet.rb
+lib/simplerdb/server.rb
+test/query_evaluator_test.rb
+test/query_parser_test.rb
+test/simplerdb_test.rb
+test/functional_test.rb

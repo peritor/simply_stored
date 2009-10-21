@@ -1,0 +1,13 @@
+***************
+*** 1,4 ****
+- require File.dirname(__FILE__)+'/../lib/dhaka'
+  
+  class AnotherLALRButNotSLRGrammar < Dhaka::Grammar
+  
+--- 1,6 ----
++ unless defined? Dhaka
++   require File.dirname(__FILE__)+'/../lib/dhaka'
++ end
+  
+  class AnotherLALRButNotSLRGrammar < Dhaka::Grammar
+  

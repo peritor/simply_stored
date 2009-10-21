@@ -1,0 +1,14 @@
+require 'rake'
+require 'rake/testtask'
+  
+task :default => [:gen]
+
+task :gen do
+  require 'query_grammar'
+
+  parser = Dhaka::Parser.new(QueryGrammar)
+  File.open('query_parser.rb', 'w') { |file| file << parser.compile_to_ruby_source_as(:QueryParser) }
+  
+  lexer = Dhaka::Lexer.new(QueryLexerSpec)
+  File.open('query_lexer.rb', 'w') {|file| file << lexer.compile_to_ruby_source_as(:QueryLexer)}
+end
