@@ -100,7 +100,7 @@ module SimplyStored
         keys = name.to_s.gsub(/^find_by_/, "").split("_and_")
         view_name = name.to_s.gsub(/^find_/, "").to_sym
         unless respond_to?(view_name)
-          puts "Warning: Defining view #{self.name}##{view_name} at call time, please add it to the class body. (Called from #{caller[0]})"
+          puts "Warning: Defining view #{self.name}##{view_name} at call time, please add it to the class body. (Called from #{caller[1]})"
           view_keys = keys.length == 1 ? keys.first : keys
           view(view_name, :key => view_keys)
         end
