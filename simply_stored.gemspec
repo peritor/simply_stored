@@ -37,6 +37,8 @@ Gem::Specification.new do |s|
      "test/simply_stored_couch_test.rb",
      "test/test_helper.rb"
   ]
+  
+  s.add_dependency "couch_potato", ">=0.2.14"
 
   if s.respond_to? :specification_version then
     current_version = Gem::Specification::CURRENT_SPECIFICATION_VERSION
