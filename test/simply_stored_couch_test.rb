@@ -529,6 +529,72 @@ class CouchTest < Test::Unit::TestCase
           end
         end
       end
+      
+      context "with has_many :trough" do
+        setup do
+          @magazine_1 = Magazine.create
+          @magazine_2 = Magazine.create
+          @reader_1 = Reader.create
+          @reader_2 = Reader.create
+        end
+        
+        should "raise an exception if there is no :through relation" do
+          
+          assert_raise(ArgumentError) do
+            class FooHasManyThroughBar
+              include SimplyStored::Couch
+              has_many :foos, :through => :bars
+            end
+          end
+        end
+        
+        should "define a getter" do
+          assert @magazine_1.respond_to?(:readers)
+          assert @reader_1.respond_to?(:magazines)
+        end
+          
+        should "load the objects through" do
+          membership = Membership.new
+          membership.magazine = @magazine_1
+          membership.reader = @reader_1
+          assert membership.save
+          
+          assert_equal @magazine_1, membership.magazine
+          assert_equal @reader_1, membership.reader
+          assert_equal [membership], @magazine_1.reload.memberships
+          assert_equal [membership], @reader_1.reload.memberships
+          
+          assert_equal [@reader_1], @magazine_1.readers
+          assert_equal [@magazine_1], @reader_1.magazines
+          
+          membership_2 = Membership.new
+          membership_2.magazine = @magazine_1
+          membership_2.reader = @reader_2
+          assert membership_2.save
+          
+          assert_equal [@reader_1.id, @reader_2.id].sort, @magazine_1.reload.readers.map(&:id).sort
+          assert_equal [@magazine_1.id], @reader_1.reload.magazines.map(&:id).sort
+          assert_equal [@magazine_1.id], @reader_2.reload.magazines.map(&:id).sort
+          
+          membership_3 = Membership.new
+          membership_3.magazine = @magazine_2
+          membership_3.reader = @reader_2
+          assert membership_3.save
+          
+          assert_equal [@reader_1.id, @reader_2.id].sort, @magazine_1.reload.readers.map(&:id).sort
+          assert_equal [@reader_2.id].sort, @magazine_2.reload.readers.map(&:id).sort
+          assert_equal [@magazine_1.id], @reader_1.reload.magazines.map(&:id).sort
+          assert_equal [@magazine_1.id, @magazine_2.id], @reader_2.reload.magazines.map(&:id).sort
+          
+          membership_3.destroy
+          
+          assert_equal [@reader_1.id, @reader_2.id].sort, @magazine_1.reload.readers.map(&:id).sort
+          assert_equal [], @magazine_2.reload.readers
+          assert_equal [@magazine_1.id], @reader_1.reload.magazines.map(&:id).sort
+          assert_equal [@magazine_1.id], @reader_2.reload.magazines.map(&:id).sort
+        end
+
+      end
 
       context "with has_one" do
         

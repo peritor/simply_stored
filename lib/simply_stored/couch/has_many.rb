@@ -15,6 +15,26 @@ module SimplyStored
         end
       end
       
+      def define_has_many_through_getter(name, through)
+        raise ArgumentError, "no such relation: #{self} - #{through}" unless instance_methods.map(&:to_sym).include?(through.to_sym)
+        
+        define_method(name) do |*args|
+          forced_reload = args.first && args.first.is_a?(Hash) && args.first[:force_reload]
+          if forced_reload || instance_variable_get("@#{name}").nil?
+            
+            # there is probably a faster way to query this
+            intermediate_objects = find_associated(through, self.class)
+            
+            through_objects = intermediate_objects.map do |intermediate_object|
+              intermediate_object.send(name.to_s.singularize.underscore)
+            end.flatten.uniq
+            
+            instance_variable_set("@#{name}", through_objects)
+          end
+          instance_variable_get("@#{name}")
+        end
+      end
+      
       def define_has_many_setter_add(name)
         define_method("add_#{name.to_s.singularize}") do |value|
           klass = self.class.get_class_from_name(name)
@@ -59,13 +79,23 @@ module SimplyStored
         attr_reader :name, :options
         
         def initialize(owner_clazz, name, options = {})
-          options = {:dependent => :nullify}.update(options)
+          options = {
+            :dependent => :nullify,
+            :through => nil
+          }.update(options)
           @name, @options = name, options
-          owner_clazz.class_eval do
-            define_has_many_getter(name)
-            define_has_many_setter_add(name)
-            define_has_many_setter_remove(name)
-            define_has_many_setter_remove_all(name)
+          
+          if options[:through]
+            owner_clazz.class_eval do
+              define_has_many_through_getter(name, options[:through])
+            end
+          else
+            owner_clazz.class_eval do
+              define_has_many_getter(name)
+              define_has_many_setter_add(name)
+              define_has_many_setter_remove(name)
+              define_has_many_setter_remove_all(name)
+            end
           end
         end
         

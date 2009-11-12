@@ -79,3 +79,24 @@ class DontCountMe
   
   property :title
 end
+
+class Magazine
+  include SimplyStored::Couch
+  
+  has_many :memberships
+  has_many :readers, :through => :memberships
+end
+
+class Reader
+  include SimplyStored::Couch
+  
+  has_many :memberships
+  has_many :magazines, :through => :memberships
+end
+
+class Membership
+  include SimplyStored::Couch
+  
+  belongs_to :reader
+  belongs_to :magazine
+end
