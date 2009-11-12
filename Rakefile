@@ -20,6 +20,7 @@ begin
     s.description = "Convenience layer for CouchDB and SimpleDB. Requires CouchPotato and RightAWS library respectively."
     s.authors = ["Mathias Meyer, Jonathan Weiss"]
     s.files = FileList["[A-Z]*.*", "{lib}/**/*"]
+    s.add_dependency('couch_potato', '>= 0.2.15')
   end
 rescue LoadError
   puts "Jeweler not available. Install it with: sudo gem install technicalpickles-jeweler -s http://gems.github.com"
