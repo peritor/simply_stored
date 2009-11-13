@@ -78,8 +78,9 @@ module SimplyStored
     
     def check_and_destroy_dependents
       self.class.properties.each do |property|
-        if property.respond_to?(:association?) and property.association?          
+        if property.respond_to?(:association?) and property.association?
           next unless property.options[:dependent]
+          next if property.options[:through]
           dependents = send(property.name, :force_reload => true)
           dependents = [dependents] unless dependents.is_a?(Array)
           dependents.reject{|d| d.nil?}.each do |dependent|
