@@ -99,6 +99,8 @@ module SimplyStored
           }.update(options)
           @name, @options = name, options
           
+          options.assert_valid_keys(:dependent, :through)
+          
           if options[:through]
             owner_clazz.class_eval do
               define_has_many_through_getter(name, options[:through])

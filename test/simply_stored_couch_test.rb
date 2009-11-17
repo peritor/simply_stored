@@ -354,10 +354,18 @@ class CouchTest < Test::Unit::TestCase
           user.posts
         end
         
-        should "verify the given options" do
+        should "verify the given options for the accessor method" do
           user = User.create(:title => "Mr.")
           assert_raise(ArgumentError) do
             user.posts(:foo => false)
+          end
+        end
+        
+        should "verify the given options for the association defintion" do
+          assert_raise(ArgumentError) do
+            User.instance_eval do
+              has_many :foo, :bar => :do
+            end
           end
         end
         
@@ -636,10 +644,18 @@ class CouchTest < Test::Unit::TestCase
           assert_equal identity, instance.identity
         end
         
-        should "verify the given options" do
+        should "verify the given options for the accessor method" do
           instance = Instance.create
           assert_raise(ArgumentError) do
             instance.identity(:foo => :var)
+          end
+        end
+        
+        should "verify the given options for the association defintion" do
+          assert_raise(ArgumentError) do
+            User.instance_eval do
+              has_one :foo, :bar => :do
+            end
           end
         end
         

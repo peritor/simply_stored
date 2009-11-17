@@ -53,6 +53,9 @@ module SimplyStored
         def initialize(owner_clazz, name, options = {})
           options = {:dependent => :nullify}.update(options)
           @name, @options = name, options
+          
+          options.assert_valid_keys(:dependent)
+          
           owner_clazz.class_eval do
             define_has_one_getter(name)
             define_has_one_setter(name)
