@@ -32,7 +32,14 @@ module SimplyStored
       
       def define_has_one_getter(name)
         define_method(name) do |*args|
-          forced_reload = args.first && args.first.is_a?(Hash) && args.first[:force_reload]
+          options = args.first && args.first.is_a?(Hash) && args.first
+          if options
+            options.assert_valid_keys(:force_reload)
+            forced_reload = options[:force_reload]
+          else
+            forced_reload = false
+          end
+
           if forced_reload || instance_variable_get("@#{name}").nil?
             instance_variable_set("@#{name}", find_one_associated(name, self.class))
           end

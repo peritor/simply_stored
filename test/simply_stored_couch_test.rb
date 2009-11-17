@@ -354,6 +354,13 @@ class CouchTest < Test::Unit::TestCase
           user.posts
         end
         
+        should "verify the given options" do
+          user = User.create(:title => "Mr.")
+          assert_raise(ArgumentError) do
+            user.posts(:foo => false)
+          end
+        end
+        
         should "only fetch objects of the correct type" do
           user = User.create(:title => "Mr.")
           post = Post.new
@@ -594,6 +601,12 @@ class CouchTest < Test::Unit::TestCase
           assert_equal [@journal_1.id], @reader_2.reload.journals.map(&:id).sort
         end
         
+        should "verify the given options" do
+          assert_raise(ArgumentError) do
+            @journal_1.readers(:foo => true)
+          end
+        end
+        
         should "not try to destroy/nullify through-objects on parent object delete" do
           membership = Membership.new
           membership.journal = @journal_1
@@ -621,6 +634,13 @@ class CouchTest < Test::Unit::TestCase
           instance = Instance.create
           identity = Identity.create(:instance => instance)
           assert_equal identity, instance.identity
+        end
+        
+        should "verify the given options" do
+          instance = Instance.create
+          assert_raise(ArgumentError) do
+            instance.identity(:foo => :var)
+          end
         end
         
         should "store the fetched object into the cache" do

@@ -7,7 +7,14 @@ module SimplyStored
 
       def define_has_many_getter(name)
         define_method(name) do |*args|
-          forced_reload = args.first && args.first.is_a?(Hash) && args.first[:force_reload]
+          options = args.first && args.first.is_a?(Hash) && args.first
+          if options
+            options.assert_valid_keys(:force_reload)
+            forced_reload = options[:force_reload]
+          else
+            forced_reload = false
+          end
+
           if forced_reload || instance_variable_get("@#{name}").nil?
             instance_variable_set("@#{name}", find_associated(name, self.class))
           end
@@ -19,7 +26,14 @@ module SimplyStored
         raise ArgumentError, "no such relation: #{self} - #{through}" unless instance_methods.map(&:to_sym).include?(through.to_sym)
         
         define_method(name) do |*args|
-          forced_reload = args.first && args.first.is_a?(Hash) && args.first[:force_reload]
+          options = args.first && args.first.is_a?(Hash) && args.first
+          if options
+            options.assert_valid_keys(:force_reload)
+            forced_reload = options[:force_reload]
+          else
+            forced_reload = false
+          end
+          
           if forced_reload || instance_variable_get("@#{name}").nil?
             
             # there is probably a faster way to query this
