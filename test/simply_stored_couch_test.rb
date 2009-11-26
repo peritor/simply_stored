@@ -1177,10 +1177,17 @@ class CouchTest < Test::Unit::TestCase
         
         should "not delete the object but populate the soft_delete_attribute" do
           now = Time.now
-          Time.expects(:now).returns(now)
+          Time.stubs(:now).returns(now)
           assert_nil @hemorrhoid.deleted_at
           assert @hemorrhoid.delete
           assert_equal now, @hemorrhoid.deleted_at
+        end
+        
+        should "survive reloads with the new attribute" do
+          assert_nil @hemorrhoid.deleted_at
+          assert @hemorrhoid.delete
+          @hemorrhoid.reload
+          assert_not_nil @hemorrhoid.deleted_at
         end
         
         should "know when it is deleted" do
@@ -1193,6 +1200,16 @@ class CouchTest < Test::Unit::TestCase
           assert !@user.deleted?
           @user.delete
           assert !@user.deleted?
+        end
+        
+        should "not delete in DB" do
+          CouchPotato.database.expects(:destroy_document).never
+          @hemorrhoid.destroy
+        end
+        
+        should "really delete if asked to" do
+          CouchPotato.database.expects(:destroy_document).with(@hemorrhoid)
+          @hemorrhoid.destroy!
         end
         
         context "when handling the dependent objects" do
@@ -1215,11 +1232,12 @@ class CouchTest < Test::Unit::TestCase
           should "delete them" do
             @hemorrhoid.delete
             @sub.reload
-            assert !@sub.deleted?
+            assert @sub.deleted?
             assert_raise(SimplyStored::RecordNotFound) do
               EasySubHemorrhoid.find(@easy_sub.id, :with_deleted => true)
             end
-            assert_nil @rash.reload.hemorrhoid
+            @rash = Rash.find(@rash.id)
+            assert_nil @rash.hemorrhoid_id
           end
         
           should "really delete them if the parent is really deleted" do
@@ -1231,17 +1249,58 @@ class CouchTest < Test::Unit::TestCase
             assert_raise(SimplyStored::RecordNotFound) do
               EasySubHemorrhoid.find(@easy_sub.id, :with_deleted => true)
             end
-            assert_nil @rash.reload.hemorrhoid
+            
+            @rash = Rash.find(@rash.id)
+            assert_nil @rash.hemorrhoid_id
           end
         end
         
       end
       
       context "when loading" do
+        setup do
+          @user = User.new(:name => 'BigT', :title => 'Dr.')
+          @user.save!
+          @hemorrhoid = Hemorrhoid.new
+          @hemorrhoid.user = @user
+          @hemorrhoid.save!
+        end
+        
         context "by id" do
+          should "not be found by default" do
+            @hemorrhoid.destroy            
+            assert_raise(SimplyStored::RecordNotFound) do
+              Hemorrhoid.find(@hemorrhoid.id)
+            end
+          end
+          
+          should "be found if supplied with :with_deleted" do
+            @hemorrhoid.destroy
+            
+            assert_not_nil Hemorrhoid.find(@hemorrhoid.id, :with_deleted => true)
+          end
+          
+          should "not be found if it is really gone" do
+            old_id = @hemorrhoid.id
+            @hemorrhoid.destroy!
+            
+            assert_raise(SimplyStored::RecordNotFound) do
+              Hemorrhoid.find(old_id)
+            end
+          end
+          
+          should "always reload" do
+            @hemorrhoid.destroy
+            assert_nothing_raised do
+              @hemorrhoid.reload
+            end
+            assert_not_nil @hemorrhoid.deleted_at
+          end
         end
         
         context "by relation" do
+          should "not load deleted by default"
+          should "load deleted if asked to"
         end
       end
     end

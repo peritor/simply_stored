@@ -42,7 +42,7 @@ module SimplyStored
     end
 
     def reload
-      instance = self.class.find(_id)
+      instance = self.class.find(_id, :with_deleted => true)
       instance.attributes.each do |attribute, value|
         send "#{attribute}=", value
       end
@@ -96,15 +96,11 @@ module SimplyStored
           dependents = send(property.name, :force_reload => true)
           dependents = [dependents] unless dependents.is_a?(Array)
           dependents.reject{|d| d.nil?}.each do |dependent|
-            puts "checking #{dependent.class} #{dependent.id}"
             case property.options[:dependent]
             when :destroy
-              puts "sending destroy"
               dependent.destroy
             else
-              puts "sending null"
               dependent.send("#{self.class.foreign_property}=", nil)
-              puts "after nulling: #{dependent.send("#{self.class.foreign_property}")}"
               dependent.save(false)
             end
           end
@@ -124,6 +120,7 @@ module SimplyStored
     
     def _mark_as_deleted
       send("#{self.class.soft_delete_attribute}=", Time.now)
+      save(false)
     end
     
   end
