@@ -7,6 +7,7 @@ class User
   property :homepage
   
   has_many :posts
+  has_many :strict_posts
   
   view :by_name_and_created_at, :key => [:name, :created_at]
 end
@@ -15,6 +16,14 @@ class Post
   include SimplyStored::Couch
   
   belongs_to :user
+end
+
+class StrictPost
+  include SimplyStored::Couch
+  
+  belongs_to :user
+  
+  validates_presence_of :user
 end
 
 class Comment
@@ -100,4 +109,35 @@ class Membership
   
   belongs_to :reader
   belongs_to :journal
+end
+
+class Hemorrhoid
+  include SimplyStored::Couch
+  
+  enable_soft_delete
+  
+  belongs_to :user
+  has_many :sub_hemorrhoids, :dependent => :destroy
+  has_many :easy_sub_hemorrhoids, :dependent => :destroy
+  has_many :rashs, :dependent => :nullify
+end
+
+class SubHemorrhoid
+  include SimplyStored::Couch
+  
+  enable_soft_delete
+  
+  belongs_to :hemorrhoid
+end
+
+class EasySubHemorrhoid
+  include SimplyStored::Couch
+  
+  belongs_to :hemorrhoid
+end
+
+class Rash
+  include SimplyStored::Couch
+  
+  belongs_to :hemorrhoid
 end

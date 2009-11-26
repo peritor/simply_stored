@@ -542,6 +542,15 @@ class CouchTest < Test::Unit::TestCase
             post = Post.find(post.id)
             assert_nil post.user_id
           end
+          
+          should "nullify the foreign key even if validation forbids" do
+            user = User.create(:title => "Mr.")
+            post = StrictPost.create(:user => user)
+
+            user.destroy
+            post = StrictPost.find(post.id)
+            assert_nil post.user_id
+          end
         end
       end
       
@@ -1137,5 +1146,105 @@ class CouchTest < Test::Unit::TestCase
         end
       end
     end
+    
+    context "when using soft deletable" do
+      should "know when it is enabled" do
+        assert Hemorrhoid.soft_deleting_enabled?
+        assert !User.soft_deleting_enabled?
+      end
+      
+      should "define a :deleted_at attribute" do
+        h = Hemorrhoid.new
+        assert h.respond_to?(:deleted_at)
+        assert h.respond_to?(:deleted_at=)
+        assert_equal :deleted_at, Hemorrhoid.soft_delete_attribute
+      end
+      
+      should "define a hard delete methods" do
+        h = Hemorrhoid.new
+        assert h.respond_to?(:destroy!)
+        assert h.respond_to?(:delete!)
+      end
+      
+      context "when deleting" do
+        setup do
+          @user = User.new(:name => 'BigT', :title => 'Dr.')
+          @user.save!
+          @hemorrhoid = Hemorrhoid.new
+          @hemorrhoid.user = @user
+          @hemorrhoid.save!
+        end
+        
+        should "not delete the object but populate the soft_delete_attribute" do
+          now = Time.now
+          Time.expects(:now).returns(now)
+          assert_nil @hemorrhoid.deleted_at
+          assert @hemorrhoid.delete
+          assert_equal now, @hemorrhoid.deleted_at
+        end
+        
+        should "know when it is deleted" do
+          assert !@hemorrhoid.deleted?
+          @hemorrhoid.delete
+          assert @hemorrhoid.deleted?
+        end
+        
+        should "not consider objects without soft-deleted as deleted" do
+          assert !@user.deleted?
+          @user.delete
+          assert !@user.deleted?
+        end
+        
+        context "when handling the dependent objects" do
+          setup do
+            @sub = SubHemorrhoid.new
+            @sub.hemorrhoid = @hemorrhoid
+            @sub.save!
+            
+            @easy_sub = EasySubHemorrhoid.new
+            @easy_sub.hemorrhoid = @hemorrhoid
+            @easy_sub.save!
+            
+            @rash = Rash.new
+            @rash.hemorrhoid = @hemorrhoid
+            @rash.save!
+            
+            @hemorrhoid.reload
+          end
+          
+          should "delete them" do
+            @hemorrhoid.delete
+            @sub.reload
+            assert !@sub.deleted?
+            assert_raise(SimplyStored::RecordNotFound) do
+              EasySubHemorrhoid.find(@easy_sub.id, :with_deleted => true)
+            end
+            assert_nil @rash.reload.hemorrhoid
+          end
+        
+          should "really delete them if the parent is really deleted" do
+            @hemorrhoid.delete!
+            assert_raise(SimplyStored::RecordNotFound) do
+              EasySubHemorrhoid.find(@sub.id, :with_deleted => true)
+            end
+            
+            assert_raise(SimplyStored::RecordNotFound) do
+              EasySubHemorrhoid.find(@easy_sub.id, :with_deleted => true)
+            end
+            assert_nil @rash.reload.hemorrhoid
+          end
+        end
+        
+      end
+      
+      context "when loading" do
+        context "by id" do
+        end
+        
+        context "by relation" do
+        end
+      end
+    end
+    
   end
 end

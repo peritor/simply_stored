@@ -21,10 +21,14 @@ module SimplyStored
       CouchPotato.database.save_document!(self)
     end
 
-    def destroy
+    def destroy(override_soft_delete=false)
       check_and_destroy_dependents
-      CouchPotato.database.destroy_document(self)
-      freeze
+      if self.class.soft_deleting_enabled? && !override_soft_delete
+        _mark_as_deleted
+      else
+        CouchPotato.database.destroy_document(self)
+        freeze
+      end
     end
     alias :delete :destroy
 
@@ -46,6 +50,14 @@ module SimplyStored
       reset_dirty_attributes
       reset_association_caches
       self
+    end
+    
+    def deleted?
+      if self.class.soft_deleting_enabled?
+        !send(self.class.soft_delete_attribute).nil?
+      else
+        false
+      end
     end
     
     protected
@@ -84,12 +96,16 @@ module SimplyStored
           dependents = send(property.name, :force_reload => true)
           dependents = [dependents] unless dependents.is_a?(Array)
           dependents.reject{|d| d.nil?}.each do |dependent|
+            puts "checking #{dependent.class} #{dependent.id}"
             case property.options[:dependent]
             when :destroy
+              puts "sending destroy"
               dependent.destroy
             else
+              puts "sending null"
               dependent.send("#{self.class.foreign_property}=", nil)
-              dependent.save
+              puts "after nulling: #{dependent.send("#{self.class.foreign_property}")}"
+              dependent.save(false)
             end
           end
         end
@@ -104,6 +120,10 @@ module SimplyStored
       CouchPotato.database.view(
         self.class.get_class_from_name(from).send(
           "association_#{from.to_s.singularize.underscore}_belongs_to_#{to.name.singularize.underscore}", :key => id))
+    end
+    
+    def _mark_as_deleted
+      send("#{self.class.soft_delete_attribute}=", Time.now)
     end
     
   end

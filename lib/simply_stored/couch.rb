@@ -47,6 +47,9 @@ module SimplyStored
         when :first
           CouchPotato.database.view(all_documents(:limit => 1)).first
         else
+          with_deleted = what.is_a?(Hash) && what[:with_deleted] == true
+          what = args.first if with_deleted
+          
           raise SimplyStored::Error, "Can't load record without an id" if what.nil?
           document = CouchPotato.database.load_document(what)
           if document.nil? or !document.is_a?(self)
@@ -66,6 +69,20 @@ module SimplyStored
       
       def count
         CouchPotato.database.view(all_documents(:reduce => true))
+      end
+      
+      def enable_soft_delete(property_name = :deleted_at)
+        @_soft_delete_attribute = property_name.to_sym
+        property property_name, :type => Time
+        _define_hard_delete_methods
+      end
+      
+      def soft_delete_attribute
+        @_soft_delete_attribute
+      end
+      
+      def soft_deleting_enabled?
+        !soft_delete_attribute.nil?
       end
       
       def simpledb_string(*names)
@@ -166,6 +183,17 @@ module SimplyStored
           super
         end
       end
+      
+      def _define_hard_delete_methods
+        define_method("destroy!") do
+          destroy(true)
+        end
+        
+        define_method("delete!") do
+          destroy(true)
+        end
+      end
+      
     end
   end
 end
