@@ -542,6 +542,15 @@ class CouchTest < Test::Unit::TestCase
             post = Post.find(post.id)
             assert_nil post.user_id
           end
+          
+          should "nullify the foreign key even if validation forbids" do
+            user = User.create(:title => "Mr.")
+            post = StrictPost.create(:user => user)
+          
+            user.destroy
+            post = StrictPost.find(post.id)
+            assert_nil post.user_id
+          end
         end
       end
       

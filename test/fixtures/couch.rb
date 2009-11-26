@@ -7,6 +7,7 @@ class User
   property :homepage
   
   has_many :posts
+  has_many :strict_posts
   
   view :by_name_and_created_at, :key => [:name, :created_at]
 end
@@ -15,6 +16,14 @@ class Post
   include SimplyStored::Couch
   
   belongs_to :user
+end
+
+class StrictPost
+  include SimplyStored::Couch
+  
+  belongs_to :user
+  
+  validates_presence_of :user
 end
 
 class Comment

@@ -89,7 +89,7 @@ module SimplyStored
               dependent.destroy
             else
               dependent.send("#{self.class.foreign_property}=", nil)
-              dependent.save
+              dependent.save(false)
             end
           end
         end
