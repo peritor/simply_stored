@@ -49,9 +49,17 @@ module SimplyStored
         
         case what
         when :all
-          CouchPotato.database.view(all_documents(*args))
+          if with_deleted || !soft_deleting_enabled?
+            CouchPotato.database.view(all_documents(*args))
+          else
+            CouchPotato.database.view(all_documents_without_deleted(*args))
+          end
         when :first
-          CouchPotato.database.view(all_documents(:limit => 1)).first
+          if with_deleted || !soft_deleting_enabled?
+            CouchPotato.database.view(all_documents(:limit => 1)).first
+          else
+            CouchPotato.database.view(all_documents_without_deleted(:limit => 1)).first
+          end
         else          
           raise SimplyStored::Error, "Can't load record without an id" if what.nil?
           document = CouchPotato.database.load_document(what)
@@ -78,6 +86,7 @@ module SimplyStored
         @_soft_delete_attribute = property_name.to_sym
         property property_name, :type => Time
         _define_hard_delete_methods
+        _define_soft_delete_views
       end
       
       def soft_delete_attribute
@@ -195,6 +204,25 @@ module SimplyStored
         define_method("delete!") do
           destroy(true)
         end
+      end
+      
+      def _define_soft_delete_views
+        map_definition_without_deleted = <<-eos
+          function(doc) { 
+            if (doc['ruby_class'] == '#{self.to_s}') {
+              if (doc['#{soft_delete_attribute}'] && doc['#{soft_delete_attribute}'] != null){
+                // "soft" deleted
+              }else{
+                emit(doc._id, null);
+              }
+            }
+          }
+        eos
+        
+        view :all_documents_without_deleted,
+          :map => map_definition_without_deleted,
+          :type => :custom,
+          :include_docs => true
       end
       
     end

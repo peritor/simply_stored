@@ -1316,13 +1316,39 @@ class CouchTest < Test::Unit::TestCase
         end
         
         context "all" do
-          should "not load deleted"
-          should "load deleted if asked to"
+          setup do
+            recreate_db
+            @hemorrhoid = Hemorrhoid.create
+            assert @hemorrhoid.destroy
+            assert @hemorrhoid.reload.deleted?
+          end
+          
+          should "not load deleted" do
+            assert_equal [], Hemorrhoid.find(:all)
+            assert_equal [], Hemorrhoid.find(:all, :with_deleted => false)
+          end
+          
+          should "load deleted if asked to" do
+            assert_equal [@hemorrhoid.id], Hemorrhoid.find(:all, :with_deleted => true).map(&:id)
+          end
         end
         
         context "first" do
-          should "not load deleted"
-          should "load deleted if asked to"
+          setup do
+            recreate_db
+            @hemorrhoid = Hemorrhoid.create
+            assert @hemorrhoid.destroy
+            assert @hemorrhoid.reload.deleted?
+          end
+          
+          should "not load deleted" do
+            assert_nil Hemorrhoid.find(:first)
+            assert_nil Hemorrhoid.find(:first, :with_deleted => false)
+          end
+          
+          should "load deleted if asked to" do
+            assert_equal @hemorrhoid, Hemorrhoid.find(:first, :with_deleted => true)
+          end
         end
         
         context "by relation" do
