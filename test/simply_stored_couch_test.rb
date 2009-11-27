@@ -135,6 +135,10 @@ class CouchTest < Test::Unit::TestCase
       end
       
       context "with a find_by prefix" do
+        setup do
+          recreate_db
+        end
+        
         should "create a view for the called finder" do
           User.find_by_name("joe")
           assert User.respond_to?(:by_name)
@@ -142,7 +146,7 @@ class CouchTest < Test::Unit::TestCase
         
         should 'not create the view when it already exists' do
           User.expects(:view).never
-          User.find_by_name_and_created_at("joe")
+          User.find_by_name_and_created_at("joe", 'foo')
         end
         
         should "create a method to prevent future loops through method_missing" do
@@ -160,6 +164,16 @@ class CouchTest < Test::Unit::TestCase
           User.create(:title => "Mr.")
           assert User.find_by_title("Mr.").is_a?(User)
         end
+        
+        should "raise an error if the parameters don't match" do
+          assert_raise(ArgumentError) do
+            User.find_by_title()
+          end
+          
+          assert_raise(ArgumentError) do
+            User.find_by_title(1,2,3,4,5)
+          end
+        end
       end
       
       context "with a find_all_by prefix" do
@@ -170,7 +184,7 @@ class CouchTest < Test::Unit::TestCase
         
         should 'not create the view when it already exists' do
           User.expects(:view).never
-          User.find_all_by_name_and_created_at("joe")
+          User.find_all_by_name_and_created_at("joe", "foo")
         end
         
         should "create a method to prevent future loops through method_missing" do
@@ -188,6 +202,16 @@ class CouchTest < Test::Unit::TestCase
           User.create(:title => "Mr.")
           User.create(:title => "Mr.")
           assert_equal 2, User.find_all_by_title("Mr.").size
+        end
+        
+        should "raise an error if the parameters don't match" do
+          assert_raise(ArgumentError) do
+            User.find_all_by_title()
+          end
+          
+          assert_raise(ArgumentError) do
+            User.find_all_by_title(1,2,3,4,5)
+          end
         end
       end      
     end
@@ -1351,6 +1375,47 @@ class CouchTest < Test::Unit::TestCase
           end
         end
         
+        context "find_by and find_all_by" do
+          setup do
+            recreate_db
+            @hemorrhoid = Hemorrhoid.create(:nickname => 'Claas')
+            @hemorrhoid.destroy
+          end
+          
+          context "find_by" do
+            should "not load deleted" do
+              assert_nil Hemorrhoid.find_by_nickname('Claas')
+              assert_nil Hemorrhoid.find_by_nickname('Claas', :with_deleted => false)
+            end
+          
+            should "load deleted if asked to" do
+              assert_not_nil Hemorrhoid.find_by_nickname('Claas', :with_deleted => true)
+              assert_equal @hemorrhoid.id, Hemorrhoid.find_by_nickname('Claas', :with_deleted => true).id
+            end
+          end
+          
+          context "find_all_by" do
+            should "not load deleted" do
+              assert_equal [], Hemorrhoid.find_all_by_nickname('Claas')
+              assert_equal [], Hemorrhoid.find_all_by_nickname('Claas', :with_deleted => false)
+            end
+          
+            should "load deleted if asked to" do
+              assert_equal [@hemorrhoid.id], Hemorrhoid.find_all_by_nickname('Claas', :with_deleted => true).map(&:id)
+            end
+          end
+          
+          should "reuse the same view - when find_all_by is called first" do
+            assert_equal [], Hemorrhoid.find_all_by_nickname('Claas')
+            assert_nil Hemorrhoid.find_by_nickname('Claas')
+          end
+          
+          should "reuse the same view - when find_by is called first" do
+            assert_nil Hemorrhoid.find_by_nickname('Claas')
+            assert_equal [], Hemorrhoid.find_all_by_nickname('Claas')
+          end
+        end
+        
         context "by relation" do
           setup do
             @hemorrhoid.destroy
@@ -1438,17 +1503,34 @@ class CouchTest < Test::Unit::TestCase
       end
       
       context "when counting" do
-        should "only count non-deleted by default"
-        should "count also deleted if asked to"
+        setup do
+          recreate_db
+          @hemorrhoid = Hemorrhoid.create(:nickname => 'Claas')
+          assert @hemorrhoid.destroy
+          assert @hemorrhoid.reload.deleted?
+        end
+        
+        should "not count deleted" do
+          assert_equal 0, Hemorrhoid.count
+          assert_equal 0, Hemorrhoid.count(:with_deleted => false)
+        end
+        
+        should "count deleted if asked to" do
+          assert_equal 1, Hemorrhoid.count(:with_deleted => true)
+        end      
+        
+        context "count_by" do
+          should "not count deleted" do
+            assert_equal 0, Hemorrhoid.count_by_nickname('Claas')
+            assert_equal 0, Hemorrhoid.count_by_nickname('Claas', :with_deleted => false)
+          end
+
+          should "count deleted if asked to" do
+            assert_equal 1, Hemorrhoid.count_by_nickname('Claas', :with_deleted => true)
+          end
+        end  
       end
-      
-      context "when restoring" do
-        should "should only restore deleted"
-        should "should reset the deleted attribute"
-        should "be found again after restore - by id"
-        should "be found again after restore - by has_many"
-        should "restore dependent if they are also marked as deleted"
-      end
+
     end
     
   end

@@ -45,20 +45,20 @@ module SimplyStored
         options = args.last.is_a?(Hash) ? args.last : {}
         
         options.assert_valid_keys(:with_deleted)
-        with_deleted = options[:with_deleted]
+        with_deleted = options.delete(:with_deleted)
         
         case what
         when :all
           if with_deleted || !soft_deleting_enabled?
             CouchPotato.database.view(all_documents(*args))
           else
-            CouchPotato.database.view(all_documents_without_deleted(*args))
+            CouchPotato.database.view(all_documents_without_deleted(:key => [:deleted_at => nil]))
           end
         when :first
           if with_deleted || !soft_deleting_enabled?
             CouchPotato.database.view(all_documents(:limit => 1)).first
           else
-            CouchPotato.database.view(all_documents_without_deleted(:limit => 1)).first
+            CouchPotato.database.view(all_documents_without_deleted(:key => [:deleted_at => nil], :limit => 1)).first
           end
         else          
           raise SimplyStored::Error, "Can't load record without an id" if what.nil?
@@ -78,8 +78,15 @@ module SimplyStored
         find(:first)
       end
       
-      def count
-        CouchPotato.database.view(all_documents(:reduce => true))
+      def count(options = {})
+        options.assert_valid_keys(:with_deleted)
+        with_deleted = options[:with_deleted]
+        
+        if with_deleted || !soft_deleting_enabled?
+          CouchPotato.database.view(all_documents(:reduce => true))
+        else
+          CouchPotato.database.view(all_documents_without_deleted(:reduce => true, :key => [:deleted_at => nil]))
+        end
       end
       
       def enable_soft_delete(property_name = :deleted_at)
@@ -128,37 +135,68 @@ module SimplyStored
       def _define_find_by(name, *args)
         keys = name.to_s.gsub(/^find_by_/, "").split("_and_")
         view_name = name.to_s.gsub(/^find_/, "").to_sym
+        without_deleted_view_name = "#{view_name}_withoutdeleted"
+        without_deleted_view_keys = keys + [:deleted_at]
         unless respond_to?(view_name)
           puts "Warning: Defining view #{self.name}##{view_name} at call time, please add it to the class body. (Called from #{caller[1]})"
           view_keys = keys.length == 1 ? keys.first : keys
           view(view_name, :key => view_keys)
+          view(without_deleted_view_name, :key => without_deleted_view_keys)
         end
         (class << self; self end).instance_eval do
           define_method(name) do |*key_args|
-            if keys.length == 1
-              key_args = key_args.first
-            end 
-            CouchPotato.database.view(send(view_name, :key => key_args, :limit => 1, :include_docs => true)).first
+            options = key_args.last.is_a?(Hash) ? key_args.pop : {}
+            options.assert_valid_keys(:with_deleted)
+            with_deleted = options.delete(:with_deleted)
+            
+            raise ArgumentError, "Too many or too few arguments, require #{keys.inspect}" unless keys.size == key_args.size            
+            
+            if soft_deleting_enabled? && !with_deleted
+              key_constraints = {:deleted_at => nil}
+              keys.each_with_index do |key, index|
+                key_constraints[key.to_sym] = key_args[index]
+              end
+              
+              CouchPotato.database.view(send(without_deleted_view_name, :key => key_constraints, :limit => 1, :include_docs => true)).first
+            else
+              CouchPotato.database.view(send(view_name, :key => (key_args.size == 1 ? key_args.first : key_args), :limit => 1, :include_docs => true)).first
+            end
           end
         end
         
         send(name, *args)
       end
       
-      def _define_bind_all_by(name, *args)
+      def _define_find_all_by(name, *args)
         keys = name.to_s.gsub(/^find_all_by_/, "").split("_and_")
         view_name = name.to_s.gsub(/^find_all_/, "").to_sym
+        without_deleted_view_name = "#{view_name}_withoutdeleted"
+        without_deleted_view_keys = keys + [:deleted_at]
+        
         unless respond_to?(view_name)
           puts "Warning: Defining view #{self.name}##{view_name} at call time, please add it to the class body. (Called from #{caller[0]})"
           view_keys = keys.length == 1 ? keys.first : keys
           view(view_name, :key => view_keys)
+          view(without_deleted_view_name, :key => without_deleted_view_keys)
         end
         (class << self; self end).instance_eval do
           define_method(name) do |*key_args|
-            if keys.length == 1
-              key_args = key_args.first
+            options = key_args.last.is_a?(Hash) ? key_args.pop : {}
+            options.assert_valid_keys(:with_deleted)
+            with_deleted = options.delete(:with_deleted)
+            
+            raise ArgumentError, "Too many or too few arguments, require #{keys.inspect}" unless keys.size == key_args.size            
+            
+            if soft_deleting_enabled? && !with_deleted
+              key_constraints = {:deleted_at => nil}
+              keys.each_with_index do |key, index|
+                key_constraints[key.to_sym] = key_args[index]
+              end
+              
+              CouchPotato.database.view(send(without_deleted_view_name, :key => key_constraints, :include_docs => true))
+            else
+              CouchPotato.database.view(send(view_name, :key => (key_args.size == 1 ? key_args.first : key_args), :include_docs => true))
             end
-            CouchPotato.database.view(send(view_name, :key => key_args, :include_docs => true))
           end
         end
         send(name, *args)
@@ -167,17 +205,32 @@ module SimplyStored
       def _define_count_by(name, *args)
         keys = name.to_s.gsub(/^count_by_/, "").split("_and_")
         view_name = name.to_s.gsub(/^count_/, "").to_sym
+        without_deleted_view_name = "#{view_name}_withoutdeleted"
+        without_deleted_view_keys = keys + [:deleted_at]
+        
         unless respond_to?(view_name)
           puts "Warning: Defining view #{self.name}##{view_name} at call time, please add it to the class body. (Called from #{caller[0]})"
           view_keys = keys.length == 1 ? keys.first : keys
           view(view_name, :key => view_keys)
+          view(without_deleted_view_name, :key => without_deleted_view_keys)
         end
         (class << self; self end).instance_eval do
           define_method("#{name}") do |*key_args|
-            if keys.length == 1
-              key_args = key_args.first
+            options = key_args.last.is_a?(Hash) ? key_args.pop : {}
+            options.assert_valid_keys(:with_deleted)
+            with_deleted = options.delete(:with_deleted)
+            
+            if soft_deleting_enabled? && !with_deleted
+              key_constraints = {:deleted_at => nil}
+              keys.each_with_index do |key, index|
+                key_constraints[key.to_sym] = key_args[index]
+              end
+              
+              CouchPotato.database.view(send(without_deleted_view_name, :key => key_constraints, :reduce => true))
+            else
+              CouchPotato.database.view(send(view_name, :key => (key_args.size == 1 ? key_args.first : key_args), :reduce => true))
             end
-            CouchPotato.database.view(send(view_name, :key => key_args, :reduce => true))
+            
           end
         end
       
@@ -188,7 +241,7 @@ module SimplyStored
         if name.to_s =~ /^find_by/
           _define_find_by(name, *args)
         elsif name.to_s =~ /^find_all_by/
-          _define_bind_all_by(name, *args)
+          _define_find_all_by(name, *args)
         elsif name.to_s =~ /^count_by/
           _define_count_by(name, *args)
         else
@@ -206,23 +259,8 @@ module SimplyStored
         end
       end
       
-      def _define_soft_delete_views
-        map_definition_without_deleted = <<-eos
-          function(doc) { 
-            if (doc['ruby_class'] == '#{self.to_s}') {
-              if (doc['#{soft_delete_attribute}'] && doc['#{soft_delete_attribute}'] != null){
-                // "soft" deleted
-              }else{
-                emit(doc._id, null);
-              }
-            }
-          }
-        eos
-        
-        view :all_documents_without_deleted,
-          :map => map_definition_without_deleted,
-          :type => :custom,
-          :include_docs => true
+      def _define_soft_delete_views 
+        view :all_documents_without_deleted, :key => [:created_at, soft_delete_attribute]
       end
       
     end

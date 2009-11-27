@@ -118,6 +118,7 @@ class Hemorrhoid
   
   enable_soft_delete
   
+  property :nickname
   belongs_to :user
   belongs_to :pain
   belongs_to :spot
