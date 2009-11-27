@@ -34,14 +34,16 @@ module SimplyStored
         define_method(name) do |*args|
           options = args.first && args.first.is_a?(Hash) && args.first
           if options
-            options.assert_valid_keys(:force_reload)
+            options.assert_valid_keys(:force_reload, :with_deleted)
             forced_reload = options[:force_reload]
+            with_deleted = options[:with_deleted]
           else
             forced_reload = false
+            with_deleted = false
           end
 
           if forced_reload || instance_variable_get("@#{name}").nil?
-            instance_variable_set("@#{name}", find_one_associated(name, self.class))
+            instance_variable_set("@#{name}", find_one_associated(name, self.class, :with_deleted => with_deleted))
           end
           instance_variable_get("@#{name}")
         end

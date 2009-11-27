@@ -8,6 +8,8 @@ class User
   
   has_many :posts
   has_many :strict_posts
+  has_many :hemorrhoids
+  has_many :pains, :through => :hemorrhoids
   
   view :by_name_and_created_at, :key => [:name, :created_at]
 end
@@ -117,9 +119,12 @@ class Hemorrhoid
   enable_soft_delete
   
   belongs_to :user
+  belongs_to :pain
+  belongs_to :spot
   has_many :sub_hemorrhoids, :dependent => :destroy
   has_many :easy_sub_hemorrhoids, :dependent => :destroy
   has_many :rashs, :dependent => :nullify
+  has_many :small_rashs, :dependent => :nullify
 end
 
 class SubHemorrhoid
@@ -140,4 +145,25 @@ class Rash
   include SimplyStored::Couch
   
   belongs_to :hemorrhoid
+end
+
+class SmallRash
+  include SimplyStored::Couch
+  
+  enable_soft_delete
+  
+  belongs_to :hemorrhoid
+end
+
+class Pain
+  include SimplyStored::Couch
+  
+  has_many :hemorrhoids
+  has_many :users, :through => :hemorrhoids
+end
+
+class Spot
+  include SimplyStored::Couch
+  
+  has_one :hemorrhoid
 end

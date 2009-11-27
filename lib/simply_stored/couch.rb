@@ -41,15 +41,18 @@ module SimplyStored
       end
       
       def find(*args)
-        case what = args.pop
+        what = args.shift
+        options = args.last.is_a?(Hash) ? args.last : {}
+        
+        options.assert_valid_keys(:with_deleted)
+        with_deleted = options[:with_deleted]
+        
+        case what
         when :all
           CouchPotato.database.view(all_documents(*args))
         when :first
           CouchPotato.database.view(all_documents(:limit => 1)).first
-        else
-          with_deleted = what.is_a?(Hash) && what[:with_deleted] == true
-          what = args.first if with_deleted
-          
+        else          
           raise SimplyStored::Error, "Can't load record without an id" if what.nil?
           document = CouchPotato.database.load_document(what)
           if document.nil? or !document.is_a?(self) or (document.deleted? && !with_deleted)

@@ -4,10 +4,36 @@ module SimplyStored
     module BelongsTo
       
       def belongs_to(name)
+        map_definition_without_deleted = <<-eos
+          function(doc) { 
+            if (doc['ruby_class'] == '#{self.to_s}' && doc['#{name.to_s}_id'] != null) {
+              if (doc['#{soft_delete_attribute}'] && doc['#{soft_delete_attribute}'] != null){
+                // "soft" deleted
+              }else{
+                emit(doc.#{name.to_s}_id, null);
+              }
+            }
+          }
+        eos
+         
         view "association_#{self.name.underscore}_belongs_to_#{name}",
-             :map => "function(doc) { if (doc['ruby_class'] == '#{self.to_s}' && doc['#{name.to_s}_id'] != null) { emit(doc.#{name.to_s}_id, null) }}",
-             :type => "custom",
-             :include_docs => true
+          :map => map_definition_without_deleted,
+          :type => "custom",
+          :include_docs => true
+          
+        map_definition_with_deleted = <<-eos
+          function(doc) { 
+            if (doc['ruby_class'] == '#{self.to_s}' && doc['#{name.to_s}_id'] != null) {
+              emit(doc.#{name.to_s}_id, null);
+            }
+          }
+        eos
+         
+        view "association_#{self.name.underscore}_belongs_to_#{name}_with_deleted",
+          :map => map_definition_with_deleted,
+          :type => "custom",
+          :include_docs => true
+            
         property name, :class => SimplyStored::Couch::BelongsTo::Property
       end
 
@@ -21,9 +47,14 @@ module SimplyStored
             attr_reader "#{name}_id"
             attr_accessor "#{name}_id_was"
             
-            define_method name do
-              return instance_variable_get("@#{name}") unless instance_variable_get("@#{name}").nil?
-              instance_variable_set("@#{name}", send("#{name}_id") ? Object.const_get(item_class_name).find(send("#{name}_id")) : nil)
+            define_method name do |*args|
+              options = args.last.is_a?(Hash) ? args.last : {}
+              options.assert_valid_keys(:force_reload, :with_deleted)
+              forced_reload = options[:force_reload] || false
+              with_deleted = options[:with_deleted] || false
+              
+              return instance_variable_get("@#{name}") unless instance_variable_get("@#{name}").nil? or forced_reload
+              instance_variable_set("@#{name}", send("#{name}_id") ? Object.const_get(item_class_name).find(send("#{name}_id"), :with_deleted => with_deleted) : nil)
             end
           
             define_method "#{name}=" do |value|

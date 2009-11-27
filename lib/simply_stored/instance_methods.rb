@@ -100,22 +100,34 @@ module SimplyStored
             when :destroy
               dependent.destroy
             else
-              dependent.send("#{self.class.foreign_property}=", nil)
-              dependent.save(false)
+              unless dependent.class.soft_deleting_enabled?
+                dependent.send("#{self.class.foreign_property}=", nil)
+                dependent.save(false)
+              end
             end
           end
         end
       end
     end
     
-    def find_one_associated(from, to)
-      find_associated(from, to, :limit => 1, :descending => true).first
+    def find_one_associated(from, to, options = {})
+      options = {
+        :limit => 1, 
+        :descending => true
+      }.update(options)
+      find_associated(from, to, options).first
     end
     
     def find_associated(from, to, options = {})
-      CouchPotato.database.view(
-        self.class.get_class_from_name(from).send(
-          "association_#{from.to_s.singularize.underscore}_belongs_to_#{to.name.singularize.underscore}", :key => id))
+      if options[:with_deleted]
+        CouchPotato.database.view(
+          self.class.get_class_from_name(from).send(
+            "association_#{from.to_s.singularize.underscore}_belongs_to_#{to.name.singularize.underscore}_with_deleted", :key => id))
+      else
+        CouchPotato.database.view(
+          self.class.get_class_from_name(from).send(
+            "association_#{from.to_s.singularize.underscore}_belongs_to_#{to.name.singularize.underscore}", :key => id))
+      end
     end
     
     def _mark_as_deleted

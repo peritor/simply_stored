@@ -9,14 +9,16 @@ module SimplyStored
         define_method(name) do |*args|
           options = args.first && args.first.is_a?(Hash) && args.first
           if options
-            options.assert_valid_keys(:force_reload)
+            options.assert_valid_keys(:force_reload, :with_deleted)
             forced_reload = options[:force_reload]
+            with_deleted = options[:with_deleted]
           else
             forced_reload = false
+            with_deleted = false
           end
 
           if forced_reload || instance_variable_get("@#{name}").nil?
-            instance_variable_set("@#{name}", find_associated(name, self.class))
+            instance_variable_set("@#{name}", find_associated(name, self.class, :with_deleted => with_deleted))
           end
           instance_variable_get("@#{name}")
         end
@@ -28,19 +30,21 @@ module SimplyStored
         define_method(name) do |*args|
           options = args.first && args.first.is_a?(Hash) && args.first
           if options
-            options.assert_valid_keys(:force_reload)
+            options.assert_valid_keys(:force_reload, :with_deleted)
             forced_reload = options[:force_reload]
+            with_deleted = options[:with_deleted]
           else
             forced_reload = false
+            with_deleted = false
           end
           
           if forced_reload || instance_variable_get("@#{name}").nil?
             
             # there is probably a faster way to query this
-            intermediate_objects = find_associated(through, self.class)
+            intermediate_objects = find_associated(through, self.class, :with_deleted => with_deleted)
             
             through_objects = intermediate_objects.map do |intermediate_object|
-              intermediate_object.send(name.to_s.singularize.underscore)
+              intermediate_object.send(name.to_s.singularize.underscore, :with_deleted => with_deleted)
             end.flatten.uniq
             
             instance_variable_set("@#{name}", through_objects)

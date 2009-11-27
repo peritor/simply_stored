@@ -294,6 +294,14 @@ class CouchTest < Test::Unit::TestCase
           assert_equal 'foo', post.user
         end
         
+        should "ignore the cache if force_reload is given as an option" do
+          user = User.create(:name => 'Dude', :title => 'Mr.')
+          post = Post.create(:user => user)
+          post.reload
+          post.instance_variable_set("@user", 'foo')
+          assert_not_equal 'foo', post.user(:force_reload => true)
+        end
+        
         should 'set cache in setter' do
           post = Post.create
           user = User.create
@@ -1253,6 +1261,15 @@ class CouchTest < Test::Unit::TestCase
             @rash = Rash.find(@rash.id)
             assert_nil @rash.hemorrhoid_id
           end
+          
+          should "not nullify dependents if they are soft-deletable" do
+            small_rash = SmallRash.create(:hemorrhoid => @hemorrhoid)
+            @hemorrhoid.reload
+            @hemorrhoid.destroy
+            small_rash = SmallRash.find(small_rash.id)
+            assert_not_nil small_rash.hemorrhoid_id
+            assert_equal @hemorrhoid.id, small_rash.hemorrhoid_id
+          end
         end
         
       end
@@ -1298,10 +1315,113 @@ class CouchTest < Test::Unit::TestCase
           end
         end
         
-        context "by relation" do
-          should "not load deleted by default"
+        context "all" do
+          should "not load deleted"
           should "load deleted if asked to"
         end
+        
+        context "first" do
+          should "not load deleted"
+          should "load deleted if asked to"
+        end
+        
+        context "by relation" do
+          setup do
+            @hemorrhoid.destroy
+          end
+          
+          context "has_many" do
+            should "not load deleted by default" do
+              assert_equal [], @user.hemorrhoids
+            end
+          
+            should "load deleted if asked to" do
+              assert_equal [@hemorrhoid.id], @user.hemorrhoids(:with_deleted => true).map(&:id)
+            end
+          end
+          
+          context "has_many :through" do
+            setup do
+              @user = User.create(:name => 'BigT', :title => 'Dr.')
+              @pain = Pain.create
+              
+              @hemorrhoid = Hemorrhoid.new
+              @hemorrhoid.user = @user
+              @hemorrhoid.pain = @pain
+              @hemorrhoid.save!
+              
+              @hemorrhoid.destroy
+            end
+            
+            should "not load deleted by default" do
+              assert_equal [], @user.pains
+            end
+          
+            should "load deleted if asked to" do
+              assert_equal [@pain.id], @user.pains(:with_deleted => true).map(&:id)
+            end
+          end
+          
+          context "has_one" do
+            setup do
+              @spot = Spot.create
+              
+              @hemorrhoid = Hemorrhoid.new
+              @hemorrhoid.spot = @spot
+              @hemorrhoid.save!
+              
+              @hemorrhoid.destroy
+            end
+            
+            should "not load deleted by default" do
+              assert_nil @spot.hemorrhoid
+            end
+          
+            should "load deleted if asked to" do
+              assert_equal @hemorrhoid.id, @spot.hemorrhoid(:with_deleted => true).id
+            end
+          end
+          
+          context "belongs_to" do
+            setup do              
+              @hemorrhoid = Hemorrhoid.new
+              @hemorrhoid.save!
+              
+              @sub = SubHemorrhoid.new
+              @sub.hemorrhoid = @hemorrhoid
+              @sub.save!
+              
+              @hemorrhoid.destroy
+            end
+            
+            should "not load deleted by default" do
+              @sub.reload
+              assert_raise(SimplyStored::RecordNotFound) do
+                assert_nil @sub.hemorrhoid
+              end
+            end
+          
+            should "load deleted if asked to" do
+              @sub.reload
+              assert_equal @hemorrhoid.id, @sub.hemorrhoid(:with_deleted => true).id
+            end
+          end
+          
+        end
+        
+      end
+      
+      context "when counting" do
+        should "only count non-deleted by default"
+        should "count also deleted if asked to"
+      end
+      
+      context "when restoring" do
+        should "should only restore deleted"
+        should "should reset the deleted attribute"
+        should "be found again after restore - by id"
+        should "be found again after restore - by has_many"
+        should "restore dependent if they are also marked as deleted"
       end
     end
     
