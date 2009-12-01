@@ -52,13 +52,13 @@ module SimplyStored
           if with_deleted || !soft_deleting_enabled?
             CouchPotato.database.view(all_documents(*args))
           else
-            CouchPotato.database.view(all_documents_without_deleted(:key => [:deleted_at => nil]))
+            CouchPotato.database.view(all_documents_without_deleted(:key => nil))
           end
         when :first
           if with_deleted || !soft_deleting_enabled?
             CouchPotato.database.view(all_documents(:limit => 1)).first
           else
-            CouchPotato.database.view(all_documents_without_deleted(:key => [:deleted_at => nil], :limit => 1)).first
+            CouchPotato.database.view(all_documents_without_deleted(:key => nil, :limit => 1)).first
           end
         else          
           raise SimplyStored::Error, "Can't load record without an id" if what.nil?
@@ -85,7 +85,7 @@ module SimplyStored
         if with_deleted || !soft_deleting_enabled?
           CouchPotato.database.view(all_documents(:reduce => true))
         else
-          CouchPotato.database.view(all_documents_without_deleted(:reduce => true, :key => [:deleted_at => nil]))
+          CouchPotato.database.view(all_documents_without_deleted(:reduce => true, :key => nil))
         end
       end
       
@@ -158,12 +158,8 @@ module SimplyStored
             raise ArgumentError, "Too many or too few arguments, require #{keys.inspect}" unless keys.size == key_args.size            
             
             if soft_deleting_enabled? && !with_deleted
-              key_constraints = {:deleted_at => nil}
-              keys.each_with_index do |key, index|
-                key_constraints[key.to_sym] = key_args[index]
-              end
-              
-              CouchPotato.database.view(send(without_deleted_view_name, :key => key_constraints, :limit => 1, :include_docs => true)).first
+              key_args = key_args + [nil] # deleted_at
+              CouchPotato.database.view(send(without_deleted_view_name, :key => (key_args.size == 1 ? key_args.first : key_args), :limit => 1, :include_docs => true)).first
             else
               CouchPotato.database.view(send(view_name, :key => (key_args.size == 1 ? key_args.first : key_args), :limit => 1, :include_docs => true)).first
             end
@@ -199,12 +195,8 @@ module SimplyStored
             raise ArgumentError, "Too many or too few arguments, require #{keys.inspect}" unless keys.size == key_args.size            
             
             if soft_deleting_enabled? && !with_deleted
-              key_constraints = {:deleted_at => nil}
-              keys.each_with_index do |key, index|
-                key_constraints[key.to_sym] = key_args[index]
-              end
-              
-              CouchPotato.database.view(send(without_deleted_view_name, :key => key_constraints, :include_docs => true))
+              key_args = key_args + [nil] # deleted_at
+              CouchPotato.database.view(send(without_deleted_view_name, :key => (key_args.size == 1 ? key_args.first : key_args), :include_docs => true))
             else
               CouchPotato.database.view(send(view_name, :key => (key_args.size == 1 ? key_args.first : key_args), :include_docs => true))
             end
@@ -237,12 +229,8 @@ module SimplyStored
             with_deleted = options.delete(:with_deleted)
             
             if soft_deleting_enabled? && !with_deleted
-              key_constraints = {:deleted_at => nil}
-              keys.each_with_index do |key, index|
-                key_constraints[key.to_sym] = key_args[index]
-              end
-              
-              CouchPotato.database.view(send(without_deleted_view_name, :key => key_constraints, :reduce => true))
+              key_args = key_args + [nil] # deleted_at
+              CouchPotato.database.view(send(without_deleted_view_name, :key => (key_args.size == 1 ? key_args.first : key_args), :reduce => true))
             else
               CouchPotato.database.view(send(view_name, :key => (key_args.size == 1 ? key_args.first : key_args), :reduce => true))
             end
@@ -276,7 +264,7 @@ module SimplyStored
       end
       
       def _define_soft_delete_views 
-        view :all_documents_without_deleted, :key => [:created_at, soft_delete_attribute]
+        view :all_documents_without_deleted, :key => soft_delete_attribute
       end
       
     end

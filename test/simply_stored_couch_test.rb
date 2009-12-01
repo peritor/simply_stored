@@ -198,6 +198,11 @@ class CouchTest < Test::Unit::TestCase
           assert_equal [user], User.find_all_by_homepage("http://www.peritor.com")
         end
         
+        should "return an emtpy array if none found" do
+          recreate_db
+          assert_equal [], User.find_all_by_title('Mr. Magoooo')
+        end
+        
         should 'find all instances when using find_all_by' do
           User.create(:title => "Mr.")
           User.create(:title => "Mr.")
@@ -1352,6 +1357,12 @@ class CouchTest < Test::Unit::TestCase
             assert_equal [], Hemorrhoid.find(:all, :with_deleted => false)
           end
           
+          should "load non-deleted" do
+            hemorrhoid = Hemorrhoid.create
+            assert_not_equal [], Hemorrhoid.find(:all)
+            assert_not_equal [], Hemorrhoid.find(:all, :with_deleted => false)
+          end
+          
           should "load deleted if asked to" do
             assert_equal [@hemorrhoid.id], Hemorrhoid.find(:all, :with_deleted => true).map(&:id)
           end
@@ -1368,6 +1379,12 @@ class CouchTest < Test::Unit::TestCase
           should "not load deleted" do
             assert_nil Hemorrhoid.find(:first)
             assert_nil Hemorrhoid.find(:first, :with_deleted => false)
+          end
+          
+          should "load non-deleted" do
+            hemorrhoid = Hemorrhoid.create
+            assert_not_nil Hemorrhoid.find(:first)
+            assert_not_nil Hemorrhoid.find(:first, :with_deleted => false)
           end
           
           should "load deleted if asked to" do
@@ -1390,6 +1407,12 @@ class CouchTest < Test::Unit::TestCase
               assert_nil Hemorrhoid.find_by_nickname_and_size('Claas', 3)
               assert_nil Hemorrhoid.find_by_nickname_and_size('Claas', 3, :with_deleted => false)
             end
+            
+            should "load non-deleted" do
+              hemorrhoid = Hemorrhoid.create(:nickname => 'OtherNick', :size => 3)
+              assert_equal hemorrhoid.id, Hemorrhoid.find_by_nickname('OtherNick', :with_deleted => true).id
+              assert_equal hemorrhoid.id, Hemorrhoid.find_by_nickname('OtherNick').id
+            end
           
             should "load deleted if asked to" do
               assert_not_nil Hemorrhoid.find_by_nickname('Claas', :with_deleted => true)
@@ -1407,6 +1430,11 @@ class CouchTest < Test::Unit::TestCase
               
               assert_equal [], Hemorrhoid.find_all_by_nickname_and_size('Claas', 3)
               assert_equal [], Hemorrhoid.find_all_by_nickname_and_size('Claas', 3, :with_deleted => false)
+            end
+            
+            should "load non-deleted" do
+              hemorrhoid = Hemorrhoid.create(:nickname => 'Lampe', :size => 4)
+              assert_equal [hemorrhoid.id], Hemorrhoid.find_all_by_nickname('Lampe').map(&:id)
             end
           
             should "load deleted if asked to" do
@@ -1523,6 +1551,12 @@ class CouchTest < Test::Unit::TestCase
         should "not count deleted" do
           assert_equal 0, Hemorrhoid.count
           assert_equal 0, Hemorrhoid.count(:with_deleted => false)
+        end
+        
+        should "count non-deleted" do
+          hemorrhoid = Hemorrhoid.create(:nickname => 'Claas')
+          assert_equal 1, Hemorrhoid.count
+          assert_equal 1, Hemorrhoid.count(:with_deleted => false)
         end
         
         should "count deleted if asked to" do
