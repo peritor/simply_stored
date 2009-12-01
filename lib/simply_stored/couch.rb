@@ -144,7 +144,7 @@ module SimplyStored
           view(view_name, :key => view_keys)
         end
         
-        unless respond_to?(without_deleted_view_name)
+        if !respond_to?(without_deleted_view_name) && soft_deleting_enabled?
           puts "Warning: Defining view #{self.name}##{without_deleted_view_name} with keys #{without_deleted_view_keys.inspect} at call time, please add it to the class body. (Called from #{caller[0]})"
           view(without_deleted_view_name, :key => without_deleted_view_keys)
         end
@@ -185,7 +185,7 @@ module SimplyStored
           view(view_name, :key => view_keys)
         end
         
-        unless respond_to?(without_deleted_view_name)
+        if !respond_to?(without_deleted_view_name) && soft_deleting_enabled?
           puts "Warning: Defining view #{self.name}##{without_deleted_view_name} with keys #{without_deleted_view_keys.inspect} at call time, please add it to the class body. (Called from #{caller[0]})"
           view(without_deleted_view_name, :key => without_deleted_view_keys)
         end
@@ -225,7 +225,7 @@ module SimplyStored
           view(view_name, :key => view_keys)
         end
         
-        unless respond_to?(without_deleted_view_name)
+        if !respond_to?(without_deleted_view_name) && soft_deleting_enabled?
           puts "Warning: Defining view #{self.name}##{without_deleted_view_name} with keys #{without_deleted_view_keys.inspect} at call time, please add it to the class body. (Called from #{caller[0]})"
           view(without_deleted_view_name, :key => without_deleted_view_keys)
         end
