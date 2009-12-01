@@ -135,14 +135,20 @@ module SimplyStored
       def _define_find_by(name, *args)
         keys = name.to_s.gsub(/^find_by_/, "").split("_and_")
         view_name = name.to_s.gsub(/^find_/, "").to_sym
+        view_keys = keys.length == 1 ? keys.first : keys
         without_deleted_view_name = "#{view_name}_withoutdeleted"
         without_deleted_view_keys = keys + [:deleted_at]
+        
         unless respond_to?(view_name)
-          puts "Warning: Defining view #{self.name}##{view_name} at call time, please add it to the class body. (Called from #{caller[1]})"
-          view_keys = keys.length == 1 ? keys.first : keys
+          puts "Warning: Defining view #{self.name}##{view_name} with keys #{view_keys.inspect} at call time, please add it to the class body. (Called from #{caller[0]})"
           view(view_name, :key => view_keys)
+        end
+        
+        unless respond_to?(without_deleted_view_name)
+          puts "Warning: Defining view #{self.name}##{without_deleted_view_name} with keys #{without_deleted_view_keys.inspect} at call time, please add it to the class body. (Called from #{caller[0]})"
           view(without_deleted_view_name, :key => without_deleted_view_keys)
         end
+        
         (class << self; self end).instance_eval do
           define_method(name) do |*key_args|
             options = key_args.last.is_a?(Hash) ? key_args.pop : {}
@@ -170,15 +176,20 @@ module SimplyStored
       def _define_find_all_by(name, *args)
         keys = name.to_s.gsub(/^find_all_by_/, "").split("_and_")
         view_name = name.to_s.gsub(/^find_all_/, "").to_sym
+        view_keys = keys.length == 1 ? keys.first : keys
         without_deleted_view_name = "#{view_name}_withoutdeleted"
         without_deleted_view_keys = keys + [:deleted_at]
         
         unless respond_to?(view_name)
-          puts "Warning: Defining view #{self.name}##{view_name} at call time, please add it to the class body. (Called from #{caller[0]})"
-          view_keys = keys.length == 1 ? keys.first : keys
+          puts "Warning: Defining view #{self.name}##{view_name} with keys #{view_keys.inspect} at call time, please add it to the class body. (Called from #{caller[0]})"
           view(view_name, :key => view_keys)
+        end
+        
+        unless respond_to?(without_deleted_view_name)
+          puts "Warning: Defining view #{self.name}##{without_deleted_view_name} with keys #{without_deleted_view_keys.inspect} at call time, please add it to the class body. (Called from #{caller[0]})"
           view(without_deleted_view_name, :key => without_deleted_view_keys)
         end
+        
         (class << self; self end).instance_eval do
           define_method(name) do |*key_args|
             options = key_args.last.is_a?(Hash) ? key_args.pop : {}
@@ -205,15 +216,20 @@ module SimplyStored
       def _define_count_by(name, *args)
         keys = name.to_s.gsub(/^count_by_/, "").split("_and_")
         view_name = name.to_s.gsub(/^count_/, "").to_sym
+        view_keys = keys.length == 1 ? keys.first : keys
         without_deleted_view_name = "#{view_name}_withoutdeleted"
         without_deleted_view_keys = keys + [:deleted_at]
         
         unless respond_to?(view_name)
-          puts "Warning: Defining view #{self.name}##{view_name} at call time, please add it to the class body. (Called from #{caller[0]})"
-          view_keys = keys.length == 1 ? keys.first : keys
+          puts "Warning: Defining view #{self.name}##{view_name} with keys #{view_keys.inspect} at call time, please add it to the class body. (Called from #{caller[0]})"
           view(view_name, :key => view_keys)
+        end
+        
+        unless respond_to?(without_deleted_view_name)
+          puts "Warning: Defining view #{self.name}##{without_deleted_view_name} with keys #{without_deleted_view_keys.inspect} at call time, please add it to the class body. (Called from #{caller[0]})"
           view(without_deleted_view_name, :key => without_deleted_view_keys)
         end
+        
         (class << self; self end).instance_eval do
           define_method("#{name}") do |*key_args|
             options = key_args.last.is_a?(Hash) ? key_args.pop : {}

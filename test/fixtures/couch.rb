@@ -12,6 +12,7 @@ class User
   has_many :pains, :through => :hemorrhoids
   
   view :by_name_and_created_at, :key => [:name, :created_at]
+  view :by_name_and_created_at_withoutdeleted, :key => [:name, :created_at, :deleted_at]
 end
 
 class Post
@@ -117,6 +118,8 @@ class Hemorrhoid
   include SimplyStored::Couch
   
   enable_soft_delete
+  
+  view :by_nickname_and_size, :key => [:nickname, :size]
   
   property :nickname
   property :size
