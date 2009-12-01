@@ -129,6 +129,15 @@ class Hemorrhoid
   has_many :easy_sub_hemorrhoids, :dependent => :destroy
   has_many :rashs, :dependent => :nullify
   has_many :small_rashs, :dependent => :nullify
+  
+  before_destroy :before_destroy_callback
+  after_destroy :after_destroy_callback
+  
+  def before_destroy_callback
+  end
+  
+  def after_destroy_callback
+  end
 end
 
 class SubHemorrhoid

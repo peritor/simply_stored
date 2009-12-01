@@ -26,6 +26,7 @@ module SimplyStored
       if self.class.soft_deleting_enabled? && !override_soft_delete
         _mark_as_deleted
       else
+        self.skip_callbacks = true if self.class.soft_deleting_enabled? && deleted?
         CouchPotato.database.destroy_document(self)
         freeze
       end
@@ -131,8 +132,10 @@ module SimplyStored
     end
     
     def _mark_as_deleted
+      run_callbacks(:before_destroy)
       send("#{self.class.soft_delete_attribute}=", Time.now)
       save(false)
+      run_callbacks(:after_destroy)
     end
     
   end

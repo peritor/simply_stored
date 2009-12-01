@@ -1249,6 +1249,64 @@ class CouchTest < Test::Unit::TestCase
           @hemorrhoid.destroy!
         end
         
+        context "callbacks" do
+        
+          should "still fire the callbacks" do
+            @hemorrhoid = Hemorrhoid.create
+            $before = nil
+            $after = nil
+            def @hemorrhoid.before_destroy_callback
+              $before = "now"
+            end
+          
+            def @hemorrhoid.after_destroy_callback
+              $after = "now"
+            end
+          
+            @hemorrhoid.destroy
+          
+            assert_not_nil $before
+            assert_not_nil $after
+          end
+        
+          should "not fire the callbacks on the real destroy if the object is already deleted" do
+            @hemorrhoid = Hemorrhoid.create
+            def @hemorrhoid.before_destroy_callback
+              raise "Callback called even though #{skip_callbacks.inspect}"
+            end
+          
+            def @hemorrhoid.after_destroy_callback
+              raise "Callback called even though #{skip_callbacks.inspect}"
+            end
+          
+            def @hemorrhoid.deleted?
+              true
+            end
+            
+            assert_nothing_raised do
+              @hemorrhoid.destroy!
+            end
+          end
+          
+          should "not fire the callbacks on the real destroy if the object is not deleted" do
+            @hemorrhoid = Hemorrhoid.create
+            $before = nil
+            $after = nil
+            def @hemorrhoid.before_destroy_callback
+              $before = "now"
+            end
+          
+            def @hemorrhoid.after_destroy_callback
+              $after = "now"
+            end
+          
+            @hemorrhoid.destroy!
+          
+            assert_not_nil $before
+            assert_not_nil $after
+          end
+        end
+        
         context "when handling the dependent objects" do
           setup do
             @sub = SubHemorrhoid.new
