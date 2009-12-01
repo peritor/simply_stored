@@ -1378,7 +1378,7 @@ class CouchTest < Test::Unit::TestCase
         context "find_by and find_all_by" do
           setup do
             recreate_db
-            @hemorrhoid = Hemorrhoid.create(:nickname => 'Claas')
+            @hemorrhoid = Hemorrhoid.create(:nickname => 'Claas', :size => 3)
             @hemorrhoid.destroy
           end
           
@@ -1386,11 +1386,17 @@ class CouchTest < Test::Unit::TestCase
             should "not load deleted" do
               assert_nil Hemorrhoid.find_by_nickname('Claas')
               assert_nil Hemorrhoid.find_by_nickname('Claas', :with_deleted => false)
+              
+              assert_nil Hemorrhoid.find_by_nickname_and_size('Claas', 3)
+              assert_nil Hemorrhoid.find_by_nickname_and_size('Claas', 3, :with_deleted => false)
             end
           
             should "load deleted if asked to" do
               assert_not_nil Hemorrhoid.find_by_nickname('Claas', :with_deleted => true)
               assert_equal @hemorrhoid.id, Hemorrhoid.find_by_nickname('Claas', :with_deleted => true).id
+              
+              assert_not_nil Hemorrhoid.find_by_nickname_and_size('Claas', 3, :with_deleted => true)
+              assert_equal @hemorrhoid.id, Hemorrhoid.find_by_nickname_and_size('Claas', 3, :with_deleted => true).id
             end
           end
           
@@ -1398,10 +1404,14 @@ class CouchTest < Test::Unit::TestCase
             should "not load deleted" do
               assert_equal [], Hemorrhoid.find_all_by_nickname('Claas')
               assert_equal [], Hemorrhoid.find_all_by_nickname('Claas', :with_deleted => false)
+              
+              assert_equal [], Hemorrhoid.find_all_by_nickname_and_size('Claas', 3)
+              assert_equal [], Hemorrhoid.find_all_by_nickname_and_size('Claas', 3, :with_deleted => false)
             end
           
             should "load deleted if asked to" do
               assert_equal [@hemorrhoid.id], Hemorrhoid.find_all_by_nickname('Claas', :with_deleted => true).map(&:id)
+              assert_equal [@hemorrhoid.id], Hemorrhoid.find_all_by_nickname_and_size('Claas', 3, :with_deleted => true).map(&:id)
             end
           end
           
