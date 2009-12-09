@@ -36,7 +36,14 @@ module SimplyStored
       
       def create(attributes = {})
         instance = new(attributes)
+        yield(instance) if block_given?
         instance.save
+        instance
+      end
+
+      def create!(attributes = {})
+        instance = new(attributes)
+        instance.save!
         instance
       end
       

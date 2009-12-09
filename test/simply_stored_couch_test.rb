@@ -19,6 +19,51 @@ class CouchTest < Test::Unit::TestCase
         user = User.create(:title => "Mr.")
         assert !user.new_record?
       end
+      
+      context "with a bang" do
+        should 'not raise an exception when saving succeeded' do
+          assert_nothing_raised do
+            User.create!(:title => "Mr.")
+          end
+        end
+        
+        should 'save the user' do
+          user = User.create!(:title => "Mr.")
+          assert !user.new_record?
+        end
+        
+        should 'raise an error when the validations failed' do
+          assert_raises(CouchPotato::Database::ValidationsFailedError) do
+            User.create!(:title => nil)
+          end
+        end
+      end
+      
+      context "with a block" do
+        should 'call the block with the record' do
+          user = User.create do |u|
+            u.title = "Mr."
+          end
+          
+          assert_equal "Mr.", user.title
+        end
+        
+        should 'save the record' do
+          user = User.create do |u|
+            u.title = "Mr."
+          end
+          assert !user.new_record?
+        end
+        
+        should 'assign attributes via the hash' do
+          user = User.create(:title => "Mr.") do |u|
+            u.name = "Host Master"
+          end
+          
+          assert_equal "Mr.", user.title
+          assert_equal "Host Master", user.name
+        end
+      end
     end
     
     context "when saving an instance" do
