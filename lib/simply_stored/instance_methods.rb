@@ -1,8 +1,9 @@
 module SimplyStored
   module InstanceMethods
     
-    def initialize(attributes = {})
+    def initialize(attributes = {}, &blk)
       super(_remove_protected_attributes(attributes))
+      blk.call(self) if blk
     end
     
     def ==(other)

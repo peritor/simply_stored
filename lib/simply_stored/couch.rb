@@ -34,15 +34,14 @@ module SimplyStored
       include SimplyStored::Couch::HasOne
       include SimplyStored::Storage::ClassMethods
       
-      def create(attributes = {})
-        instance = new(attributes)
-        yield(instance) if block_given?
+      def create(attributes = {}, &blk)
+        instance = new(attributes, &blk)
         instance.save
         instance
       end
 
-      def create!(attributes = {})
-        instance = new(attributes)
+      def create!(attributes = {}, &blk)
+        instance = new(attributes, &blk)
         instance.save!
         instance
       end
