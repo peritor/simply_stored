@@ -165,6 +165,16 @@ class CouchTest < Test::Unit::TestCase
           end
         end
         
+        should 'tell you which class failed to load something' do
+          exception = nil
+          begin
+            User.find('abc')
+          rescue SimplyStored::RecordNotFound => e
+            exception = e
+          end
+          assert_equal "User could not be found with \"abc\"", exception.message
+        end
+        
         should 'raise an error when nil was specified' do
           assert_raises(SimplyStored::Error) do
             User.find(nil)
