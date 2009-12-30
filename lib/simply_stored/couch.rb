@@ -50,7 +50,6 @@ module SimplyStored
         what = args.shift
         options = args.last.is_a?(Hash) ? args.last : {}
         
-        options.assert_valid_keys(:with_deleted)
         with_deleted = options.delete(:with_deleted)
         
         case what
@@ -58,7 +57,7 @@ module SimplyStored
           if with_deleted || !soft_deleting_enabled?
             CouchPotato.database.view(all_documents(*args))
           else
-            CouchPotato.database.view(all_documents_without_deleted(:key => nil))
+            CouchPotato.database.view(all_documents_without_deleted(options.update(:key => nil)))
           end
         when :first
           if with_deleted || !soft_deleting_enabled?
@@ -76,12 +75,12 @@ module SimplyStored
         end
       end
       
-      def all
-        find(:all)
+      def all(*args)
+        find(:all, *args)
       end
       
-      def first
-        find(:first)
+      def first(*args)
+        find(:first, *args)
       end
       
       def count(options = {})
