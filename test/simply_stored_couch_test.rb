@@ -1121,7 +1121,17 @@ class CouchTest < Test::Unit::TestCase
           CouchLogItem._s3_options[:log_data][:bucket] = 'mybucket'
           
           @s3.expects(:bucket).with('mybucket').returns(nil)
-          @s3.expects(:bucket).with('mybucket', true, 'private', :location => :us).returns(@bucket)
+          @s3.expects(:bucket).with('mybucket', true, 'private', :location => nil).returns(@bucket)
+          @log_item.save
+        end
+        
+        should "accept :us location option but not set it in RightAWS::S3" do
+          @log_item.log_data = "Yay! log me"
+          CouchLogItem._s3_options[:log_data][:bucket] = 'mybucket'
+          CouchLogItem._s3_options[:log_data][:location] = :us
+          
+          @s3.expects(:bucket).with('mybucket').returns(nil)
+          @s3.expects(:bucket).with('mybucket', true, 'private', :location => nil).returns(@bucket)
           @log_item.save
         end
         
@@ -1204,9 +1214,11 @@ class CouchTest < Test::Unit::TestCase
         end
       
         should "add a short-lived access key for private attachments" do
+          @log_item._s3_options[:log_data][:bucket] = 'bucket-for-monsieur'
+          @log_item._s3_options[:log_data][:location] = :us
           @log_item._s3_options[:log_data][:permissions] = 'private'
           @log_item.save
-          assert @log_item.log_data_url.include?("https://bucket-for-monsieur.s3.amazonaws.com:443/#{@log_item.s3_attachment_key(:log_data)}")
+          assert @log_item.log_data_url.include?("https://bucket-for-monsieur.s3.amazonaws.com:443/#{@log_item.s3_attachment_key(:log_data)}"), @log_item.log_data_url
           assert @log_item.log_data_url.include?("Signature=")
           assert @log_item.log_data_url.include?("Expires=")
         end
