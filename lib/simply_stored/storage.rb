@@ -31,8 +31,19 @@ module SimplyStored
         super
         save_attachments
       end
+      
+      def delete(*args)
+        delete_attachments
+        super
+      end
+      
+      def destroy(*args)
+        delete_attachments
+        super
+      end
     
       def save_attachments
+        return unless id.present?
         if @_s3_attachments
           @_s3_attachments.each do |name, attachment|
             if attachment[:dirty]
@@ -40,6 +51,16 @@ module SimplyStored
               s3_bucket(name).put(s3_attachment_key(name), value, {}, _s3_options[name][:permissions])
               attachment[:dirty] = false
             end
+          end
+        end
+      end
+      
+      def delete_attachments
+        return unless id.present?
+        (@_s3_attachments || {}).each do |name, attachment|
+          if _s3_options[name][:after_delete] == :delete
+            key = s3_bucket(name).key(s3_attachment_key(name), true)
+            key.delete
           end
         end
       end
@@ -65,7 +86,8 @@ module SimplyStored
           :permissions => 'private', 
           :ssl => true, 
           :location => :us, # use :eu for European buckets
-          :ca_file => nil # point to CA file for SSL certificate verification
+          :ca_file => nil, # point to CA file for SSL certificate verification
+          :after_delete => :nothing # or :delete to delete the item on S3 after it is deleted in the DB
         }.update(options)
         self._s3_options ||= {}
         self._s3_options[name] = options

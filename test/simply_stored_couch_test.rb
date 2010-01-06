@@ -1267,6 +1267,27 @@ class CouchTest < Test::Unit::TestCase
           assert_equal "Yay!", @log_item.log_data
         end
       end
+      
+      context "when deleting" do
+        setup do
+          CouchLogItem._s3_options[:log_data][:after_delete] = :nothing
+          @log_item.log_data = 'Yatzzee'
+          @log_item.save
+        end
+        
+        should "do nothing to S3" do
+          @bucket.expects(:key).never
+          @log_item.delete
+        end
+        
+        should "also delete on S3 if configured so" do
+          CouchLogItem._s3_options[:log_data][:after_delete] = :delete
+          s3_key = mock(:delete => true)
+          @bucket.expects(:key).with(@log_item.s3_attachment_key('log_data'), true).returns(s3_key)
+          @log_item.delete
+        end
+        
+      end
     end
     
     context "when using soft deletable" do
