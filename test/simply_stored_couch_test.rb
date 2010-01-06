@@ -1109,6 +1109,12 @@ class CouchTest < Test::Unit::TestCase
           @bucket.expects(:put).with(anything, "Yay! It logged!", {}, anything)
           @log_item.save
         end
+        
+        should "also upload on save!" do
+          @log_item.log_data = "Yay! It logged!"
+          @bucket.expects(:put).with(anything, "Yay! It logged!", {}, anything)
+          @log_item.save!
+        end
       
         should "use the specified bucket" do
           @log_item.log_data = "Yay! It logged!"

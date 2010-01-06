@@ -26,6 +26,11 @@ module SimplyStored
         end
         ret
       end
+      
+      def save!(*args)
+        super
+        save_attachments
+      end
     
       def save_attachments
         if @_s3_attachments

@@ -1170,6 +1170,7 @@ class SimplyStoredTest < Test::Unit::TestCase
       context "with s3 interaction" do
         setup do
           LogItem.instance_variable_set(:@_s3_connection, nil)
+          LogItem._s3_options[:log_data][:ca_file] = nil
           
           bucket = stub(:bckt) do
             stubs(:put).returns(true)
@@ -1189,7 +1190,7 @@ class SimplyStoredTest < Test::Unit::TestCase
         context "when saving the attachment" do
           should "fetch the collection" do
             @log_item.log_data = "Yay! It logged!"
-            RightAws::S3.expects(:new).with('abcdef', 'secret!', :multi_thread => true).returns(@s3)
+            RightAws::S3.expects(:new).with('abcdef', 'secret!', :multi_thread => true, :ca_file => nil).returns(@s3)
             @log_item.save
           end
         
@@ -1198,7 +1199,7 @@ class SimplyStoredTest < Test::Unit::TestCase
             @bucket.expects(:put).with(anything, "Yay! It logged!", {}, anything)
             @log_item.save
           end
-        
+                  
           should "use the specified bucket" do
             @log_item.log_data = "Yay! It logged!"
             LogItem._s3_options[:log_data][:bucket] = 'mybucket'
@@ -1211,7 +1212,17 @@ class SimplyStoredTest < Test::Unit::TestCase
             LogItem._s3_options[:log_data][:bucket] = 'mybucket'
             
             @s3.expects(:bucket).with('mybucket').returns(nil)
-            @s3.expects(:bucket).with('mybucket', true, 'private').returns(@bucket)
+            @s3.expects(:bucket).with('mybucket', true, 'private', :location => nil).returns(@bucket)
+            @log_item.save
+          end
+          
+          should "accept :us location option but not set it in RightAWS::S3" do
+            @log_item.log_data = "Yay! log me"
+            LogItem._s3_options[:log_data][:bucket] = 'mybucket'
+            LogItem._s3_options[:log_data][:location] = :us
+
+            @s3.expects(:bucket).with('mybucket').returns(nil)
+            @s3.expects(:bucket).with('mybucket', true, 'private', :location => nil).returns(@bucket)
             @log_item.save
           end
           
@@ -1220,7 +1231,7 @@ class SimplyStoredTest < Test::Unit::TestCase
             LogItem._s3_options[:log_data][:bucket] = 'mybucket'
             
             @s3.expects(:bucket).with('mybucket').returns(nil)
-            @s3.expects(:bucket).with('mybucket', true, 'private').raises(RightAws::AwsError, 'BucketAlreadyExists: The requested bucket name is not available. The bucket namespace is shared by all users of the system. Please select a different name and try again')
+            @s3.expects(:bucket).with('mybucket', true, 'private', :location => nil).raises(RightAws::AwsError, 'BucketAlreadyExists: The requested bucket name is not available. The bucket namespace is shared by all users of the system. Please select a different name and try again')
             
             assert_raise(ArgumentError) do
               @log_item.save
@@ -1295,6 +1306,8 @@ class SimplyStoredTest < Test::Unit::TestCase
           end
         
           should "add a short-lived access key for private attachments" do
+            @log_item._s3_options[:log_data][:bucket] = 'bucket-for-monsieur'
+            @log_item._s3_options[:log_data][:location] = :us
             @log_item._s3_options[:log_data][:permissions] = 'private'
             @log_item.save
             assert @log_item.log_data_url.include?("https://bucket-for-monsieur.s3.amazonaws.com:443/#{@log_item.s3_attachment_key(:log_data)}")
