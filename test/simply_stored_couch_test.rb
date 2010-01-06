@@ -1080,6 +1080,7 @@ class CouchTest < Test::Unit::TestCase
     context "with s3 interaction" do
       setup do
         CouchLogItem.instance_variable_set(:@_s3_connection, nil)
+        CouchLogItem._s3_options[:log_data][:ca_file] = nil
         
         bucket = stub(:bckt) do
           stubs(:put).returns(true)
@@ -1099,7 +1100,7 @@ class CouchTest < Test::Unit::TestCase
       context "when saving the attachment" do
         should "fetch the collection" do
           @log_item.log_data = "Yay! It logged!"
-          RightAws::S3.expects(:new).with('abcdef', 'secret!', :multi_thread => true).returns(@s3)
+          RightAws::S3.expects(:new).with('abcdef', 'secret!', :multi_thread => true, :ca_file => nil).returns(@s3)
           @log_item.save
         end
       
@@ -1231,6 +1232,16 @@ class CouchTest < Test::Unit::TestCase
       end
     
       context "when fetching the data" do
+        should "create a configured S3 connection" do
+          CouchLogItem._s3_options[:log_data][:bucket] = 'mybucket'
+          CouchLogItem._s3_options[:log_data][:location] = :eu
+          CouchLogItem._s3_options[:log_data][:ca_file] = '/etc/ssl/ca.crt'
+          
+          RightAws::S3.expects(:new).with('abcdef', 'secret!', :multi_thread => true, :ca_file => '/etc/ssl/ca.crt').returns(@s3)
+          
+          @log_item.log_data
+        end
+        
         should "fetch the data from s3 and set the attachment attribute" do
           @log_item.instance_variable_set(:@_s3_attachments, {})
           @bucket.expects(:get).with("couch_log_items/log_data/#{@log_item.id}").returns("Yay!")
