@@ -1121,16 +1121,17 @@ class CouchTest < Test::Unit::TestCase
           CouchLogItem._s3_options[:log_data][:bucket] = 'mybucket'
           
           @s3.expects(:bucket).with('mybucket').returns(nil)
-          @s3.expects(:bucket).with('mybucket', true, 'private').returns(@bucket)
+          @s3.expects(:bucket).with('mybucket', true, 'private', :location => :us).returns(@bucket)
           @log_item.save
         end
         
         should "raise an error if the bucket is not ours" do
           @log_item.log_data = "Yay! log me too"
           CouchLogItem._s3_options[:log_data][:bucket] = 'mybucket'
+          CouchLogItem._s3_options[:log_data][:location] = :eu
           
           @s3.expects(:bucket).with('mybucket').returns(nil)
-          @s3.expects(:bucket).with('mybucket', true, 'private').raises(RightAws::AwsError, 'BucketAlreadyExists: The requested bucket name is not available. The bucket namespace is shared by all users of the system. Please select a different name and try again')
+          @s3.expects(:bucket).with('mybucket', true, 'private', :location => :eu).raises(RightAws::AwsError, 'BucketAlreadyExists: The requested bucket name is not available. The bucket namespace is shared by all users of the system. Please select a different name and try again')
           
           assert_raise(ArgumentError) do
             @log_item.save

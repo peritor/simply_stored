@@ -12,7 +12,7 @@ module SimplyStored
       def s3_bucket(name)
         if !@_s3_bucket
           @_s3_bucket = s3_connection(name).bucket(_s3_options[name][:bucket])
-          @_s3_bucket = s3_connection(name).bucket(_s3_options[name][:bucket], true, 'private') if @_s3_bucket.nil?
+          @_s3_bucket = s3_connection(name).bucket(_s3_options[name][:bucket], true, _s3_options[name][:permissions], :location => _s3_options[name][:location]) if @_s3_bucket.nil?
         end
         @_s3_bucket
       rescue Exception => e
@@ -55,7 +55,7 @@ module SimplyStored
         
         name = name.to_sym
         raise ArgumentError, "No bucket name specified for attachment #{name}" if options[:bucket].blank?
-        options.update(:permissions => 'private', :ssl => true)
+        options.update(:permissions => 'private', :ssl => true, :location => :us)
         self._s3_options ||= {}
         self._s3_options[name] = options
         
