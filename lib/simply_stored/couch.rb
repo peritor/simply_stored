@@ -69,7 +69,7 @@ module SimplyStored
           raise SimplyStored::Error, "Can't load record without an id" if what.nil?
           document = CouchPotato.database.load_document(what)
           if document.nil? or !document.is_a?(self) or (document.deleted? && !with_deleted)
-            raise(SimplyStored::RecordNotFound)
+            raise(SimplyStored::RecordNotFound, "#{self.name} could not be found with #{what.inspect}")
           end
           document
         end

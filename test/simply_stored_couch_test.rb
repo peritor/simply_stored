@@ -165,6 +165,16 @@ class CouchTest < Test::Unit::TestCase
           end
         end
         
+        should 'tell you which class failed to load something' do
+          exception = nil
+          begin
+            User.find('abc')
+          rescue SimplyStored::RecordNotFound => e
+            exception = e
+          end
+          assert_equal "User could not be found with \"abc\"", exception.message
+        end
+        
         should 'raise an error when nil was specified' do
           assert_raises(SimplyStored::Error) do
             User.find(nil)
@@ -1070,6 +1080,7 @@ class CouchTest < Test::Unit::TestCase
     context "with s3 interaction" do
       setup do
         CouchLogItem.instance_variable_set(:@_s3_connection, nil)
+        CouchLogItem._s3_options[:log_data][:ca_file] = nil
         
         bucket = stub(:bckt) do
           stubs(:put).returns(true)
@@ -1089,7 +1100,7 @@ class CouchTest < Test::Unit::TestCase
       context "when saving the attachment" do
         should "fetch the collection" do
           @log_item.log_data = "Yay! It logged!"
-          RightAws::S3.expects(:new).with('abcdef', 'secret!', :multi_thread => true).returns(@s3)
+          RightAws::S3.expects(:new).with('abcdef', 'secret!', :multi_thread => true, :ca_file => nil).returns(@s3)
           @log_item.save
         end
       
@@ -1111,16 +1122,27 @@ class CouchTest < Test::Unit::TestCase
           CouchLogItem._s3_options[:log_data][:bucket] = 'mybucket'
           
           @s3.expects(:bucket).with('mybucket').returns(nil)
-          @s3.expects(:bucket).with('mybucket', true, 'private').returns(@bucket)
+          @s3.expects(:bucket).with('mybucket', true, 'private', :location => nil).returns(@bucket)
+          @log_item.save
+        end
+        
+        should "accept :us location option but not set it in RightAWS::S3" do
+          @log_item.log_data = "Yay! log me"
+          CouchLogItem._s3_options[:log_data][:bucket] = 'mybucket'
+          CouchLogItem._s3_options[:log_data][:location] = :us
+          
+          @s3.expects(:bucket).with('mybucket').returns(nil)
+          @s3.expects(:bucket).with('mybucket', true, 'private', :location => nil).returns(@bucket)
           @log_item.save
         end
         
         should "raise an error if the bucket is not ours" do
           @log_item.log_data = "Yay! log me too"
           CouchLogItem._s3_options[:log_data][:bucket] = 'mybucket'
+          CouchLogItem._s3_options[:log_data][:location] = :eu
           
           @s3.expects(:bucket).with('mybucket').returns(nil)
-          @s3.expects(:bucket).with('mybucket', true, 'private').raises(RightAws::AwsError, 'BucketAlreadyExists: The requested bucket name is not available. The bucket namespace is shared by all users of the system. Please select a different name and try again')
+          @s3.expects(:bucket).with('mybucket', true, 'private', :location => :eu).raises(RightAws::AwsError, 'BucketAlreadyExists: The requested bucket name is not available. The bucket namespace is shared by all users of the system. Please select a different name and try again')
           
           assert_raise(ArgumentError) do
             @log_item.save
@@ -1193,9 +1215,11 @@ class CouchTest < Test::Unit::TestCase
         end
       
         should "add a short-lived access key for private attachments" do
+          @log_item._s3_options[:log_data][:bucket] = 'bucket-for-monsieur'
+          @log_item._s3_options[:log_data][:location] = :us
           @log_item._s3_options[:log_data][:permissions] = 'private'
           @log_item.save
-          assert @log_item.log_data_url.include?("https://bucket-for-monsieur.s3.amazonaws.com:443/#{@log_item.s3_attachment_key(:log_data)}")
+          assert @log_item.log_data_url.include?("https://bucket-for-monsieur.s3.amazonaws.com:443/#{@log_item.s3_attachment_key(:log_data)}"), @log_item.log_data_url
           assert @log_item.log_data_url.include?("Signature=")
           assert @log_item.log_data_url.include?("Expires=")
         end
@@ -1208,6 +1232,16 @@ class CouchTest < Test::Unit::TestCase
       end
     
       context "when fetching the data" do
+        should "create a configured S3 connection" do
+          CouchLogItem._s3_options[:log_data][:bucket] = 'mybucket'
+          CouchLogItem._s3_options[:log_data][:location] = :eu
+          CouchLogItem._s3_options[:log_data][:ca_file] = '/etc/ssl/ca.crt'
+          
+          RightAws::S3.expects(:new).with('abcdef', 'secret!', :multi_thread => true, :ca_file => '/etc/ssl/ca.crt').returns(@s3)
+          
+          @log_item.log_data
+        end
+        
         should "fetch the data from s3 and set the attachment attribute" do
           @log_item.instance_variable_set(:@_s3_attachments, {})
           @bucket.expects(:get).with("couch_log_items/log_data/#{@log_item.id}").returns("Yay!")
