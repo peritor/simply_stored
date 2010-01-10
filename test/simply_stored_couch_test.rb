@@ -329,6 +329,15 @@ class CouchTest < Test::Unit::TestCase
           assert_equal user.id, post.user_id
         end
         
+        should "set also the foreign key id to nil if setting the referencing object to nil" do
+          user = User.create(:title => "Mr.")
+          post = Post.create(:user => user)
+          post.user = nil
+          post.save!
+          assert_nil post.reload.user
+          assert_nil post.reload.user_id
+        end
+        
         should "fetch the object from the database when requested through the getter" do
           user = User.create(:title => "Mr.")
           post = Post.create(:user => user)
@@ -1038,6 +1047,25 @@ class CouchTest < Test::Unit::TestCase
         user.reload
         assert_equal "Mrs.", user.title
         assert_equal "Hostess Masteress", user.name
+      end
+      
+      should "remove attributes that are no longer in the database" do
+        user = User.create(:title => "Mr.", :name => "Host Master")
+        assert_not_nil user.name
+        same_user_in_different_thread = User.find(user.id)
+        same_user_in_different_thread.name = nil
+        same_user_in_different_thread.save!
+        assert_nil user.reload.name
+      end
+      
+      should "also remove foreign key attributes that are no longer in the database" do
+        user = User.create(:title => "Mr.", :name => "Host Master")
+        post = Post.create(:user => user)
+        assert_not_nil post.user_id
+        same_post_in_different_thread = Post.find(post.id)
+        same_post_in_different_thread.user = nil
+        same_post_in_different_thread.save!
+        assert_nil post.reload.user_id
       end
       
       should "not be dirty after reloading" do
