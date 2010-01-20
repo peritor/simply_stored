@@ -436,6 +436,15 @@ class CouchTest < Test::Unit::TestCase
           post.save!
           assert !post.user_changed?
         end
+        
+        should "handle a foreign_key of '' as nil" do
+          post = Post.create
+          post.user_id = ''
+          
+          assert_nothing_raised do
+            assert_nil post.user
+          end
+        end
       end
       
       context "with has_many" do

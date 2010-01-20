@@ -55,13 +55,13 @@ module SimplyStored
               with_deleted = options[:with_deleted] || false
               
               return instance_variable_get("@#{name}") unless instance_variable_get("@#{name}").nil? or forced_reload
-              instance_variable_set("@#{name}", send("#{name}_id") ? Object.const_get(item_class_name).find(send("#{name}_id"), :with_deleted => with_deleted) : nil)
+              instance_variable_set("@#{name}", send("#{name}_id").present? ? Object.const_get(item_class_name).find(send("#{name}_id"), :with_deleted => with_deleted) : nil)
             end
           
             define_method "#{name}=" do |value|
               klass = self.class.get_class_from_name(name)
               raise ArgumentError, "expected #{klass} got #{value.class}" unless value.nil? || value.is_a?(klass)
-              
+
               instance_variable_set("@#{name}", value)
               if value.nil?
                 instance_variable_set("@#{name}_id", nil)
