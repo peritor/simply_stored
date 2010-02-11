@@ -7,6 +7,9 @@ it supports associations and other syntactic sugar that makes ActiveRecord so ap
 
 Both backends have also support for S3 attachments.
 
+See also [RockingChair](http://github.com/jweiss/rocking_chair) on how to speed-up your unit tests 
+by using an in-memory CouchDB backend.
+
 Installation
 ============
 
