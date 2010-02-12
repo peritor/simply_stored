@@ -4,6 +4,7 @@ Changelog
 0.1.13
 =============
 
+- Please delete all your design documents!
 - Auto-generate count-methods for has_many associations, e.g
 
     class Blog
