@@ -1,3 +1,4 @@
+require 'validatable'
 require 'couch_potato'
 
 require File.expand_path(File.dirname(__FILE__) + '/../simply_stored')

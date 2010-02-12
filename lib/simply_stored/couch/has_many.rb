@@ -93,6 +93,26 @@ module SimplyStored
         end
       end
       
+      def define_has_many_count(name, through = nil)
+        method_name = name.to_s.singularize.underscore + "_count"
+        define_method(method_name) do |*args|
+          options = args.first && args.first.is_a?(Hash) && args.first
+          if options
+            options.assert_valid_keys(:force_reload, :with_deleted)
+            forced_reload = options[:force_reload]
+            with_deleted = options[:with_deleted]
+          else
+            forced_reload = false
+            with_deleted = false
+          end
+
+          if forced_reload || instance_variable_get("@#{method_name}").nil?
+            instance_variable_set("@#{method_name}", count_associated(through || name, self.class, :with_deleted => with_deleted))
+          end
+          instance_variable_get("@#{method_name}")
+        end
+      end
+      
       class Property
         attr_reader :name, :options
         
@@ -108,6 +128,7 @@ module SimplyStored
           if options[:through]
             owner_clazz.class_eval do
               define_has_many_through_getter(name, options[:through])
+              define_has_many_count(name, options[:through])
             end
           else
             owner_clazz.class_eval do
@@ -115,6 +136,7 @@ module SimplyStored
               define_has_many_setter_add(name)
               define_has_many_setter_remove(name)
               define_has_many_setter_remove_all(name)
+              define_has_many_count(name)
             end
           end
         end

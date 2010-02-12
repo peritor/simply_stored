@@ -119,9 +119,15 @@ The supported associations are: belongs_to, has_one, has_many, and has_many :thr
     post.comments
     # => [mikes_comment, johns_comment]
     
+    post.comment_count
+    # => 2
+    
     post.users
     # => [mike, john]
 
+    post.user_count
+    # => 2
+    
 
 CouchDB - Validations
 =============

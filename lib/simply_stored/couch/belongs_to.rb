@@ -15,9 +15,16 @@ module SimplyStored
             }
           }
         eos
+        
+        reduce_definition = <<-eos
+          function(key, values) {
+            return values.length;
+          }
+        eos
          
         view "association_#{self.name.underscore}_belongs_to_#{name}",
           :map => map_definition_without_deleted,
+          :reduce => reduce_definition,
           :type => "custom",
           :include_docs => true
           
@@ -31,6 +38,7 @@ module SimplyStored
          
         view "association_#{self.name.underscore}_belongs_to_#{name}_with_deleted",
           :map => map_definition_with_deleted,
+          :reduce => reduce_definition,
           :type => "custom",
           :include_docs => true
             

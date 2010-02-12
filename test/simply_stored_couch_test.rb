@@ -627,6 +627,69 @@ class CouchTest < Test::Unit::TestCase
             assert_equal [], user.posts
             assert_equal [], user.instance_variable_get("@posts")
           end
+          
+          context "when counting" do
+            setup do
+              @user = User.create(:title => "Mr.")
+            end
+            
+            should "define a count method" do
+              assert @user.respond_to?(:post_count)
+            end
+            
+            should "cache the result" do
+              assert_equal 0, @user.post_count
+              Post.create(:user => @user)
+              assert_equal 0, @user.post_count
+              assert_equal 0, @user.instance_variable_get("@post_count")
+              @user.instance_variable_set("@post_count", nil)
+              assert_equal 1, @user.post_count
+            end
+            
+            should "force reload even if cached" do
+              assert_equal 0, @user.post_count
+              Post.create(:user => @user)
+              assert_equal 0, @user.post_count
+              assert_equal 1, @user.post_count(:force_reload => true)
+            end
+            
+            should "count the number of belongs_to objects" do
+              assert_equal 0, @user.post_count(:force_reload => true)
+              Post.create(:user => @user)
+              assert_equal 1, @user.post_count(:force_reload => true)
+              Post.create(:user => @user)
+              assert_equal 2, @user.post_count(:force_reload => true)
+            end
+            
+            should "not count foreign objects" do
+              assert_equal 0, @user.post_count
+              Post.create(:user => nil)
+              Post.create(:user => User.create(:title => 'Doc'))
+              assert_equal 0, @user.post_count
+              assert_equal 2, Post.count
+            end
+            
+            should "not count delete objects" do
+              hemorrhoid = Hemorrhoid.create(:user => @user)
+              assert_equal 1, @user.hemorrhoid_count
+              hemorrhoid.delete
+              assert_equal 0, @user.hemorrhoid_count(:force_reload => true)
+              assert_equal 1, @user.hemorrhoid_count(:force_reload => true, :with_deleted => true)
+            end
+            
+            should "work with has_many :through" do
+              assert_equal 0, @user.pain_count
+              first_pain = Pain.create
+              frist_hemorrhoid = Hemorrhoid.create(:user => @user, :pain => first_pain)
+              assert_equal [first_pain], @user.pains
+              assert_equal 1, @user.pain_count(:force_reload => true)
+              
+              second_pain = Pain.create
+              second_hemorrhoid = Hemorrhoid.create(:user => @user, :pain => second_pain)
+              assert_equal 2, @user.pain_count(:force_reload => true)
+            end
+            
+          end
         end
         
         context 'when destroying the parent objects' do
