@@ -5,15 +5,22 @@
 
 Gem::Specification.new do |s|
   s.name = %q{simply_stored}
-  s.version = "0.1.12"
+  s.version = "0.1.13"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Mathias Meyer, Jonathan Weiss"]
-  s.date = %q{2010-01-20}
+  s.date = %q{2010-02-12}
   s.description = %q{Convenience layer for CouchDB and SimpleDB. Requires CouchPotato and RightAWS library respectively.}
   s.email = %q{info@peritor.com}
+  s.extra_rdoc_files = [
+    "LICENSE.txt",
+     "README.md"
+  ]
   s.files = [
-    "lib/simply_stored.rb",
+    "CHANGELOG.md",
+     "LICENSE.txt",
+     "README.md",
+     "lib/simply_stored.rb",
      "lib/simply_stored/class_methods_base.rb",
      "lib/simply_stored/couch.rb",
      "lib/simply_stored/couch/belongs_to.rb",
@@ -148,11 +155,14 @@ Gem::Specification.new do |s|
 
     if Gem::Version.new(Gem::RubyGemsVersion) >= Gem::Version.new('1.2.0') then
       s.add_runtime_dependency(%q<couch_potato>, [">= 0.2.15"])
+      s.add_runtime_dependency(%q<validatable>, [">= 0"])
     else
       s.add_dependency(%q<couch_potato>, [">= 0.2.15"])
+      s.add_dependency(%q<validatable>, [">= 0"])
     end
   else
     s.add_dependency(%q<couch_potato>, [">= 0.2.15"])
+    s.add_dependency(%q<validatable>, [">= 0"])
   end
 end
 
