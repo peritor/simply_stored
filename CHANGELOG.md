@@ -1,6 +1,22 @@
 Changelog
 =============
 
+
+0.1.14
+=============
+
+- Add ability to delete all design documents:
+    
+    SimplyStored::Couch.delete_all_design_documents('http://localhost:5984/mydbname')
+
+- Add rake tasks to delete all design documents. In your Rakefile:
+
+    require 'simply_stored/rake'
+
+Then you can delete all design documents in a database like this:
+
+    DATABASE=http://localhost:5984/mydb rake simply_stored:delete_design_documents    
+
 0.1.13
 =============
 

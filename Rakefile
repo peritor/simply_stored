@@ -1,5 +1,6 @@
 require 'rake'
 require 'rake/testtask'
+require File.dirname(__FILE__) + '/lib/simply_stored/rake'
 
 task "default" => "test"
 

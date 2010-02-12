@@ -7,6 +7,17 @@ class CouchTest < Test::Unit::TestCase
       CouchPotato::Config.database_name = 'simply_stored_test'
       recreate_db
     end
+    
+    context "design documents" do
+      should "delete all" do
+        db = "http://localhost:5984/#{CouchPotato::Config.database_name}"
+        assert_equal 0, SimplyStored::Couch.delete_all_design_documents(db)
+        user = User.create
+        Post.create(:user => user)
+        user.posts
+        assert_equal 1, SimplyStored::Couch.delete_all_design_documents(db)
+      end
+    end
 
     context "when creating instances" do
       should "populate the attributes" do
