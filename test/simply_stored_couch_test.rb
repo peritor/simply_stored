@@ -10,7 +10,7 @@ class CouchTest < Test::Unit::TestCase
     
     context "design documents" do
       should "delete all" do
-        db = "http://localhost:5984/#{CouchPotato::Config.database_name}"
+        db = "http://127.0.0.1:5984/#{CouchPotato::Config.database_name}"
         assert_equal 0, SimplyStored::Couch.delete_all_design_documents(db)
         user = User.create
         Post.create(:user => user)
@@ -148,7 +148,8 @@ class CouchTest < Test::Unit::TestCase
         end
         
         should "allow to order the results" do
-          assert_equal User.find(:all).reverse, User.find(:all, :order => :desc)
+          assert_not_equal User.find(:all).map(&:id), User.find(:all, :order => :desc).map(&:id)
+          assert_equal User.find(:all).map(&:id).reverse, User.find(:all, :order => :desc).map(&:id)
         end
       end
 
