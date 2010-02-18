@@ -1,6 +1,9 @@
 Changelog
 =============
 
+- Support :limit option to has_many and has_many :through associations, e.g:
+
+    @user.posts(:limit => 5)
 
 0.1.14
 =============

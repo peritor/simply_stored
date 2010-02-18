@@ -119,6 +119,9 @@ The supported associations are: belongs_to, has_one, has_many, and has_many :thr
     post.comments
     # => [mikes_comment, johns_comment]
     
+    post.comments(:limit => 1)
+    # => [mikes_comment]
+    
     post.comment_count
     # => 2
     

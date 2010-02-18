@@ -475,6 +475,39 @@ class CouchTest < Test::Unit::TestCase
           user.posts
         end
         
+        should "be able to limit the result set" do
+          user = User.create(:title => "Mr.")
+          3.times {
+            post = Post.new
+            post.user = user
+            post.save!
+          }
+          assert_equal 2, user.posts(:limit => 2).size
+        end
+        
+        should "use the given options in the cache-key" do
+          user = User.create(:title => "Mr.")
+          3.times {
+            post = Post.new
+            post.user = user
+            post.save!
+          }
+          assert_equal 2, user.posts(:limit => 2).size
+          assert_equal 3, user.posts(:limit => 3).size
+        end
+        
+        should "be able to limit the result set - also for through objects" do
+          @user = User.create(:title => "Mr.")
+          first_pain = Pain.create
+          frist_hemorrhoid = Hemorrhoid.create(:user => @user, :pain => first_pain)
+          assert_equal [first_pain], @user.pains          
+          second_pain = Pain.create
+          second_hemorrhoid = Hemorrhoid.create(:user => @user, :pain => second_pain)
+          @user.reload
+          assert_equal 2, @user.pains.size
+          assert_equal 1, @user.pains(:limit => 1).size
+        end
+                
         should "verify the given options for the accessor method" do
           user = User.create(:title => "Mr.")
           assert_raise(ArgumentError) do
@@ -509,7 +542,7 @@ class CouchTest < Test::Unit::TestCase
           post.user = user
           post.save!
           user.posts
-          assert_equal [post], user.instance_variable_get("@posts")
+          assert_equal [post], user.instance_variable_get("@posts")[:all]
         end
         
         should "add methods to handle associated objects" do
@@ -535,7 +568,7 @@ class CouchTest < Test::Unit::TestCase
             assert_equal [], daddy.posts
             daddy.add_post(item)
             assert_equal [item], daddy.posts
-            assert_equal [item], daddy.instance_variable_get("@posts")
+            assert_equal [item], daddy.instance_variable_get("@posts")[:all]
           end
 
           should "raise an error when the added item is not an object of the expected class" do
@@ -575,7 +608,7 @@ class CouchTest < Test::Unit::TestCase
             assert user.posts.include?(post)
             user.remove_post(post)
             assert !user.posts.any?{|p| post.id == p.id}
-            assert_equal [], user.instance_variable_get("@posts")
+            assert_equal [], user.instance_variable_get("@posts")[:all]
           end
           
           should "save the removed item with the nullified foreign key" do
@@ -636,7 +669,7 @@ class CouchTest < Test::Unit::TestCase
             post2 = Post.create(:user => user)
             user.remove_all_posts
             assert_equal [], user.posts
-            assert_equal [], user.instance_variable_get("@posts")
+            assert_equal [], user.instance_variable_get("@posts")[:all]
           end
           
           context "when counting" do

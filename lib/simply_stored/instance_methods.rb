@@ -121,14 +121,18 @@ module SimplyStored
     end
     
     def find_associated(from, to, options = {})
+      view_options = {}
+      view_options[:reduce] = false
+      view_options[:key] = id
+      view_options[:limit] = options[:limit] if options[:limit]
       if options[:with_deleted]
         CouchPotato.database.view(
           self.class.get_class_from_name(from).send(
-            "association_#{from.to_s.singularize.underscore}_belongs_to_#{to.name.singularize.underscore}_with_deleted", :reduce => false, :key => id))
+            "association_#{from.to_s.singularize.underscore}_belongs_to_#{to.name.singularize.underscore}_with_deleted", view_options))
       else
         CouchPotato.database.view(
           self.class.get_class_from_name(from).send(
-            "association_#{from.to_s.singularize.underscore}_belongs_to_#{to.name.singularize.underscore}", :reduce => false, :key => id))
+            "association_#{from.to_s.singularize.underscore}_belongs_to_#{to.name.singularize.underscore}", view_options))
       end
     end
     
