@@ -10,7 +10,7 @@ module SimplyStored
               if (doc['#{soft_delete_attribute}'] && doc['#{soft_delete_attribute}'] != null){
                 // "soft" deleted
               }else{
-                emit(doc.#{name.to_s}_id, null);
+                emit([doc.#{name.to_s}_id, doc.created_at], null);
               }
             }
           }
@@ -31,7 +31,7 @@ module SimplyStored
         map_definition_with_deleted = <<-eos
           function(doc) { 
             if (doc['ruby_class'] == '#{self.to_s}' && doc['#{name.to_s}_id'] != null) {
-              emit(doc.#{name.to_s}_id, null);
+              emit([doc.#{name.to_s}_id, doc.created_at], null);
             }
           }
         eos

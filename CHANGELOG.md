@@ -7,6 +7,7 @@ Changelog
     Post.find(:all, :order => :desc)
     
   Default to the CouchDB default of ascending.
+  Please update ALL design documents!
 
 
 - Support :limit option to has_many and has_many :through associations, e.g:

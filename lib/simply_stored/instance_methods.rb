@@ -123,8 +123,14 @@ module SimplyStored
     def find_associated(from, to, options = {})
       view_options = {}
       view_options[:reduce] = false
-      view_options[:key] = id
       view_options[:descending] = options[:descending] if options[:descending]
+      if view_options[:descending]
+        view_options[:startkey] = ["#{id}\u9999"]
+        view_options[:endkey] = [id]
+      else
+        view_options[:startkey] = [id]
+        view_options[:endkey] = ["#{id}\u9999"]
+      end
       view_options[:limit] = options[:limit] if options[:limit]
       if options[:with_deleted]
         CouchPotato.database.view(
@@ -138,14 +144,19 @@ module SimplyStored
     end
     
     def count_associated(from, to, options = {})
+      view_options = {}
+      view_options[:reduce] = true
+      view_options[:include_docs] = false
+      view_options[:startkey] = [id]
+      view_options[:endkey] = ["#{id}\u9999"]
       if options[:with_deleted]
         CouchPotato.database.view(
           self.class.get_class_from_name(from).send(
-            "association_#{from.to_s.singularize.underscore}_belongs_to_#{to.name.singularize.underscore}_with_deleted", :key => id, :reduce => true, :include_docs => false))
+            "association_#{from.to_s.singularize.underscore}_belongs_to_#{to.name.singularize.underscore}_with_deleted", view_options))
       else
         CouchPotato.database.view(
           self.class.get_class_from_name(from).send(
-            "association_#{from.to_s.singularize.underscore}_belongs_to_#{to.name.singularize.underscore}", :key => id, :reduce => true, :include_docs => false))
+            "association_#{from.to_s.singularize.underscore}_belongs_to_#{to.name.singularize.underscore}", view_options))
       end
     end
     
