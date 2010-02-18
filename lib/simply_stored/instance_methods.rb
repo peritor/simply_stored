@@ -124,6 +124,7 @@ module SimplyStored
       view_options = {}
       view_options[:reduce] = false
       view_options[:key] = id
+      view_options[:descending] = options[:descending] if options[:descending]
       view_options[:limit] = options[:limit] if options[:limit]
       if options[:with_deleted]
         CouchPotato.database.view(

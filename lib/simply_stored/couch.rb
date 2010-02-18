@@ -50,6 +50,9 @@ module SimplyStored
       def find(*args)
         what = args.shift
         options = args.last.is_a?(Hash) ? args.last : {}
+        if options && order = options.delete(:order)
+          options[:descending] = true if order == :desc
+        end
         
         with_deleted = options.delete(:with_deleted)
         

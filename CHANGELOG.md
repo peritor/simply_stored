@@ -1,6 +1,14 @@
 Changelog
 =============
 
+- Support :order option to has_many associations and classes, e.g:
+
+    @user.posts(:order => :desc)
+    Post.find(:all, :order => :desc)
+    
+  Default to the CouchDB default of ascending.
+
+
 - Support :limit option to has_many and has_many :through associations, e.g:
 
     @user.posts(:limit => 5)

@@ -9,20 +9,22 @@ module SimplyStored
         define_method(name) do |*args|
           options = args.first && args.first.is_a?(Hash) && args.first
           if options
-            options.assert_valid_keys(:force_reload, :with_deleted, :limit)
+            options.assert_valid_keys(:force_reload, :with_deleted, :limit, :order)
             forced_reload = options.delete(:force_reload)
             with_deleted = options[:with_deleted]
             limit = options[:limit]
+            descending = (options[:order] == :desc) ? true : false
           else
             forced_reload = false
             with_deleted = false
             limit = nil
+            descending = false
           end
 
           cached_results = cached_results = send("_get_cached_#{name}")
           cache_key = _cache_key_for(options)
           if forced_reload || cached_results[cache_key].nil? 
-            cached_results[cache_key] = find_associated(name, self.class, :with_deleted => with_deleted, :limit => limit)
+            cached_results[cache_key] = find_associated(name, self.class, :with_deleted => with_deleted, :limit => limit, :descending => descending)
             instance_variable_set("@#{name}", cached_results)
           end
           cached_results[cache_key]

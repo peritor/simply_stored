@@ -134,10 +134,21 @@ class CouchTest < Test::Unit::TestCase
     
     context "when finding instances" do
       context "with find(:all)" do
-        should "return all instances" do
+        setup do
           User.create(:title => "Mr.")
           User.create(:title => "Mrs.")
+        end
+        
+        should "return all instances" do  
           assert_equal 2, User.find(:all).size
+        end
+        
+        should "allow a limit" do
+          assert_equal 1, User.find(:all, :limit => 1).size
+        end
+        
+        should "allow to order the results" do
+          assert_equal User.find(:all).reverse, User.find(:all, :order => :desc)
         end
       end
 
@@ -157,6 +168,12 @@ class CouchTest < Test::Unit::TestCase
         should 'return one user when calling first' do
           user = User.create(:title => "Mr.")
           assert_equal user, User.first
+        end
+        
+        should 'understand the order' do
+          assert_nothing_raised do
+            User.first(:order => :desc)
+          end
         end
         
         should 'return nil when no user found' do
@@ -475,37 +492,70 @@ class CouchTest < Test::Unit::TestCase
           user.posts
         end
         
-        should "be able to limit the result set" do
-          user = User.create(:title => "Mr.")
-          3.times {
-            post = Post.new
-            post.user = user
-            post.save!
-          }
-          assert_equal 2, user.posts(:limit => 2).size
+        context "limit" do
+        
+          should "be able to limit the result set" do
+            user = User.create(:title => "Mr.")
+            3.times {
+              post = Post.new
+              post.user = user
+              post.save!
+            }
+            assert_equal 2, user.posts(:limit => 2).size
+          end
+        
+          should "use the given options in the cache-key" do
+            user = User.create(:title => "Mr.")
+            3.times {
+              post = Post.new
+              post.user = user
+              post.save!
+            }
+            assert_equal 2, user.posts(:limit => 2).size
+            assert_equal 3, user.posts(:limit => 3).size
+          end
+        
+          should "be able to limit the result set - also for through objects" do
+            @user = User.create(:title => "Mr.")
+            first_pain = Pain.create
+            frist_hemorrhoid = Hemorrhoid.create(:user => @user, :pain => first_pain)
+            assert_equal [first_pain], @user.pains          
+            second_pain = Pain.create
+            second_hemorrhoid = Hemorrhoid.create(:user => @user, :pain => second_pain)
+            @user.reload
+            assert_equal 2, @user.pains.size
+            assert_equal 1, @user.pains(:limit => 1).size
+          end
         end
         
-        should "use the given options in the cache-key" do
-          user = User.create(:title => "Mr.")
-          3.times {
-            post = Post.new
-            post.user = user
-            post.save!
-          }
-          assert_equal 2, user.posts(:limit => 2).size
-          assert_equal 3, user.posts(:limit => 3).size
-        end
-        
-        should "be able to limit the result set - also for through objects" do
-          @user = User.create(:title => "Mr.")
-          first_pain = Pain.create
-          frist_hemorrhoid = Hemorrhoid.create(:user => @user, :pain => first_pain)
-          assert_equal [first_pain], @user.pains          
-          second_pain = Pain.create
-          second_hemorrhoid = Hemorrhoid.create(:user => @user, :pain => second_pain)
-          @user.reload
-          assert_equal 2, @user.pains.size
-          assert_equal 1, @user.pains(:limit => 1).size
+        context "order" do
+          setup do
+            @user = User.create(:title => "Mr.")
+            3.times {
+              post = Post.new
+              post.user = @user
+              post.save!
+            }
+          end
+          
+          should "support different order" do
+            assert_nothing_raised do
+              @user.posts(:order => :asc)
+            end
+            
+            assert_nothing_raised do
+              @user.posts(:order => :desc)
+            end
+          end
+          
+          should "reverse the order if :desc" do
+            assert_equal @user.posts(:order => :asc).map(&:id).reverse, @user.posts(:order => :desc).map(&:id)
+          end
+          
+          should "work with the limit option" do
+            last_post = Post.create(:user => @user)
+            assert_not_equal @user.posts(:order => :asc, :limit => 3).map(&:id).reverse, @user.posts(:order => :desc, :limit => 3).map(&:id)
+          end
         end
                 
         should "verify the given options for the accessor method" do
