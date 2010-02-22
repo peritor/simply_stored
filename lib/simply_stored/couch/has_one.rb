@@ -2,7 +2,7 @@ module SimplyStored
   module Couch
     module HasOne
       def has_one(name, options = {})
-        property name, options.merge(:class => SimplyStored::Couch::HasOne::Property)
+        properties << SimplyStored::Couch::HasOne::Property.new(self, name, options)
       end
       
       def define_has_one_setter(name)

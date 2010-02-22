@@ -2,7 +2,7 @@ module SimplyStored
   module Couch
     module HasMany
       def has_many(name, options = {})
-        property name, options.merge(:class => SimplyStored::Couch::HasMany::Property)
+        properties << SimplyStored::Couch::HasMany::Property.new(self, name, options)
       end
 
       def define_has_many_getter(name)

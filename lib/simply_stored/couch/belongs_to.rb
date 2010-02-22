@@ -42,7 +42,7 @@ module SimplyStored
           :type => "custom",
           :include_docs => true
             
-        property name, :class => SimplyStored::Couch::BelongsTo::Property
+        properties << SimplyStored::Couch::BelongsTo::Property.new(self, name)
       end
 
       class Property #:nodoc:
