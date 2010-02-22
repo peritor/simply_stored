@@ -24,6 +24,7 @@ begin
     s.add_dependency('couch_potato', '>= 0.2.15')
     s.add_dependency('validatable')
   end
+  Jeweler::GemcutterTasks.new
 rescue LoadError
   puts "Jeweler not available. Install it with: sudo gem install technicalpickles-jeweler -s http://gems.github.com"
 end
