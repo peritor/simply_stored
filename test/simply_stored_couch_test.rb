@@ -1430,6 +1430,33 @@ class CouchTest < Test::Unit::TestCase
           @bucket.expects(:put).with(anything, '["one log entry","and another one"]', {}, anything)
           @log_item.save
         end
+        
+        context "when noting the size of the attachment" do
+          should "store on upload" do
+            @log_item.log_data = 'abc'
+            @bucket.expects(:put)
+            assert @log_item.save
+            assert_equal 3, @log_item.log_data_size
+          end
+        
+          should "update the size if the attachment gets updated" do
+            @log_item.log_data = 'abc'
+            @bucket.stubs(:put)
+            assert @log_item.save
+            assert_equal 3, @log_item.log_data_size
+          
+            @log_item.log_data = 'example'
+            assert @log_item.save
+            assert_equal 7, @log_item.log_data_size
+          end
+          
+          should "store the size of json attachments" do
+            @log_item.log_data = ['abc']
+            @bucket.stubs(:put)
+            assert @log_item.save
+            assert_equal ['abc'].to_json.size, @log_item.log_data_size
+          end
+        end
       end
     
       context "when fetching the data" do

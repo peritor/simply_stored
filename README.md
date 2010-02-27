@@ -186,6 +186,9 @@ Both the CouchDB backend and the SimpleDB backend have support for S3 attachment
     log.save
     # => true
     
+    log.data_size
+    # => 11238132
+    
 This will create an item on S3 in the specified bucket. The item will use the ID of the log object as the key and the body will be the data attribute. This way you can store big files outside of CouchDB or SimpleDB.    
     
 

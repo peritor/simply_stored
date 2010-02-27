@@ -21,6 +21,7 @@ module SimplyStored
       end
     
       def save(validate = true)
+        update_attachment_sizes
         if ret = super(validate)
           save_attachments
         end
@@ -28,6 +29,7 @@ module SimplyStored
       end
       
       def save!(*args)
+        update_attachment_sizes
         super
         save_attachments
       end
@@ -64,6 +66,17 @@ module SimplyStored
           end
         end
       end
+      
+      def update_attachment_sizes
+        if @_s3_attachments
+          @_s3_attachments.each do |name, attachment|
+            if attachment[:dirty]
+              value = attachment[:value].is_a?(String) ? attachment[:value] : attachment[:value].to_json
+              send("#{name}_size=", (value.size rescue nil))
+            end
+          end
+        end
+      end
     
       def s3_attachment_key(name)
         "#{self.class.name.tableize}/#{name}/#{id}"
@@ -76,11 +89,20 @@ module SimplyStored
         require 's3/right_s3'
         require 's3/right_s3_interface'
         
+        name = name.to_sym
+        
         self.class.instance_eval do
           attr_accessor :_s3_options
         end
         
-        name = name.to_sym
+        self.class_eval do
+          if respond_to?(:property)
+            property "#{name}_size"
+          else
+            simpledb_integer "#{name}_size"
+          end
+        end
+        
         raise ArgumentError, "No bucket name specified for attachment #{name}" if options[:bucket].blank?
         options = {
           :permissions => 'private', 
