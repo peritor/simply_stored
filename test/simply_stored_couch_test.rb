@@ -1295,7 +1295,7 @@ class CouchTest < Test::Unit::TestCase
       context "when saving the attachment" do
         should "fetch the collection" do
           @log_item.log_data = "Yay! It logged!"
-          RightAws::S3.expects(:new).with('abcdef', 'secret!', :multi_thread => true, :ca_file => nil).returns(@s3)
+          RightAws::S3.expects(:new).with('abcdef', 'secret!', :multi_thread => true, :ca_file => nil, :logger => nil).returns(@s3)
           @log_item.save
         end
       
@@ -1348,6 +1348,16 @@ class CouchTest < Test::Unit::TestCase
           assert_raise(ArgumentError) do
             @log_item.save
           end
+        end
+        
+        should "pass the logger object down to RightAws" do
+          logger = mock()
+          @log_item.log_data = "Yay! log me"
+          CouchLogItem._s3_options[:log_data][:bucket] = 'mybucket'
+          CouchLogItem._s3_options[:log_data][:logger] = logger
+          
+          RightAws::S3.expects(:new).with(anything, anything, {:logger => logger, :ca_file => nil, :multi_thread => true}).returns(@s3)
+          @log_item.save
         end
       
         should "not upload the attachment when it hasn't been changed" do
@@ -1465,7 +1475,7 @@ class CouchTest < Test::Unit::TestCase
           CouchLogItem._s3_options[:log_data][:location] = :eu
           CouchLogItem._s3_options[:log_data][:ca_file] = '/etc/ssl/ca.crt'
           
-          RightAws::S3.expects(:new).with('abcdef', 'secret!', :multi_thread => true, :ca_file => '/etc/ssl/ca.crt').returns(@s3)
+          RightAws::S3.expects(:new).with('abcdef', 'secret!', :multi_thread => true, :ca_file => '/etc/ssl/ca.crt', :logger => nil).returns(@s3)
           
           @log_item.log_data
         end

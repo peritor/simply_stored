@@ -177,7 +177,8 @@ Both the CouchDB backend and the SimpleDB backend have support for S3 attachment
                                :access_key => 'my-AWS-key-id',
                                :secret_access_key => 'psst!-secret',
                                :location => :eu,
-                               :after_delete => :delete
+                               :after_delete => :delete,
+                               :logger => Logger.new('/dev/null')
       
     end
     

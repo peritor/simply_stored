@@ -6,7 +6,7 @@ module SimplyStored
       end
       
       def s3_connection(name)
-        @_s3_connection ||= RightAws::S3.new(_s3_options[name][:access_key], _s3_options[name][:secret_access_key], :multi_thread => true, :ca_file => _s3_options[name][:ca_file])
+        @_s3_connection ||= RightAws::S3.new(_s3_options[name][:access_key], _s3_options[name][:secret_access_key], :multi_thread => true, :ca_file => _s3_options[name][:ca_file], :logger => _s3_options[name][:logger])
       end
     
       def s3_bucket(name)
@@ -107,7 +107,8 @@ module SimplyStored
           :ssl => true, 
           :location => :us, # use :eu for European buckets
           :ca_file => nil, # point to CA file for SSL certificate verification
-          :after_delete => :nothing # or :delete to delete the item on S3 after it is deleted in the DB
+          :after_delete => :nothing, # or :delete to delete the item on S3 after it is deleted in the DB,
+          :logger => nil # use the default RightAws logger (stdout)
         }.update(options)
         self._s3_options ||= {}
         self._s3_options[name] = options

@@ -1,6 +1,12 @@
 Changelog
 =============
 
+
+0.2.5
+=============
+
+- Allow to pass a custom logger to S3-attachments / RightAws
+
 - Support :order option to has_many associations and classes, e.g:
 
     @user.posts(:order => :desc)

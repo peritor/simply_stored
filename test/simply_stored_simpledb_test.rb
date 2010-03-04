@@ -1190,7 +1190,7 @@ class SimplyStoredTest < Test::Unit::TestCase
         context "when saving the attachment" do
           should "fetch the collection" do
             @log_item.log_data = "Yay! It logged!"
-            RightAws::S3.expects(:new).with('abcdef', 'secret!', :multi_thread => true, :ca_file => nil).returns(@s3)
+            RightAws::S3.expects(:new).with('abcdef', 'secret!', :multi_thread => true, :ca_file => nil, :logger => nil).returns(@s3)
             @log_item.save
           end
         
