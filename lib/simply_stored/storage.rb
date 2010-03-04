@@ -85,9 +85,7 @@ module SimplyStored
     
     module ClassMethods
       def has_s3_attachment(name, options = {})
-        require 'awsbase/right_awsbase'
-        require 's3/right_s3'
-        require 's3/right_s3_interface'
+        require 'right_aws'
         
         name = name.to_sym
         
