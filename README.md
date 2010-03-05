@@ -10,6 +10,8 @@ Both backends have also support for S3 attachments.
 See also [RockingChair](http://github.com/jweiss/rocking_chair) on how to speed-up your unit tests 
 by using an in-memory CouchDB backend.
 
+More examples on how to work with SimplyStored can be found [here](http://github.com/jweiss/simply_stored_examples)
+
 Installation
 ============
 
