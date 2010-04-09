@@ -114,6 +114,14 @@ module SimplyStored
         !soft_delete_attribute.nil?
       end
       
+      def auto_conflict_resolution_on_save
+        @auto_conflict_resolution_on_save.nil? ? true : @auto_conflict_resolution_on_save
+      end
+      
+      def auto_conflict_resolution_on_save=(val)
+        @auto_conflict_resolution_on_save = val
+      end
+      
       def simpledb_string(*names)
         names.each do |name|
           property name

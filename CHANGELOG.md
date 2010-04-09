@@ -1,6 +1,12 @@
 Changelog
 =============
 
+- SimplyStored now automatically retries conflicted save operations if it is possible to resolve the conflict.
+  Solving the conflict means that if updated were done one different attributes the local object will 
+  refresh those attributes and try to save again. This will be tried two times by default. Afterwards the conflict
+  exception will be re-raised.
+  
+  This feature can be controlled on the class level like this: User.auto_conflict_resolution_on_save = true | false
 
 0.2.5
 =============
