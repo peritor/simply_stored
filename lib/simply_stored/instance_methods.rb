@@ -72,15 +72,10 @@ module SimplyStored
       retry_count = 0
       begin
         blk.call
-      rescue RestClient::RequestFailed => e
-        case e.http_code
-        when 409
-          if self.class.auto_conflict_resolution_on_save && retry_count < max_retries && try_to_merge_conflict
-            retry_count += 1
-            retry
-          else
-            raise e
-          end
+      rescue RestClient::Conflict => e
+        if self.class.auto_conflict_resolution_on_save && retry_count < max_retries && try_to_merge_conflict
+          retry_count += 1
+          retry
         else
           raise e
         end

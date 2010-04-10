@@ -2032,7 +2032,7 @@ class CouchTest < Test::Unit::TestCase
         assert @original.save
         
         @copy.name = 'Prof.'
-        assert_raise(RestClient::RequestFailed) do
+        assert_raise(RestClient::Conflict) do
           assert @copy.save
         end
         
@@ -2041,24 +2041,22 @@ class CouchTest < Test::Unit::TestCase
       end
       
       should "re-raise the conflict if retried several times" do
-        response = stub(:code => 409)
-        exception = RestClient::RequestFailed.new(response)
+        exception = RestClient::Conflict.new
         CouchPotato.database.expects(:save_document).raises(exception).times(3)
         
         @copy.name = 'Prof.'
-        assert_raise(RestClient::RequestFailed) do
+        assert_raise(RestClient::Conflict) do
           assert @copy.save
         end
       end
       
       should "not try to merge and re-save if auto_conflict_resolution_on_save is disabled" do
         User.auto_conflict_resolution_on_save = false
-        response = stub(:code => 409)
-        exception = RestClient::RequestFailed.new(response)
+        exception = RestClient::Conflict.new
         CouchPotato.database.expects(:save_document).raises(exception).times(1)
         
         @copy.name = 'Prof.'
-        assert_raise(RestClient::RequestFailed) do
+        assert_raise(RestClient::Conflict) do
           assert @copy.save
         end
       end
