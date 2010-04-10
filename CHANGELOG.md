@@ -1,6 +1,9 @@
 Changelog
 =============
 
+0.3.0
+=============
+
 - SimplyStored now automatically retries conflicted save operations if it is possible to resolve the conflict.
   Solving the conflict means that if updated were done one different attributes the local object will 
   refresh those attributes and try to save again. This will be tried two times by default. Afterwards the conflict
