@@ -21,6 +21,7 @@ begin
     s.description = "Convenience layer for CouchDB and SimpleDB. Requires CouchPotato and RightAWS library respectively."
     s.authors = ["Mathias Meyer, Jonathan Weiss"]
     s.files = FileList["[A-Z]*.*", "{lib}/**/*"]
+    s.add_dependency('rest-client', '>= 1.4.2')
     s.add_dependency('couch_potato', '>= 0.2.15')
     s.add_dependency('activesupport')
     s.add_dependency('validatable')
