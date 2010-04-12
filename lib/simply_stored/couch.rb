@@ -1,5 +1,6 @@
 require 'validatable'
 require 'couch_potato'
+require 'active_support'
 
 require File.expand_path(File.dirname(__FILE__) + '/../simply_stored')
 require 'simply_stored/couch/validations'
@@ -111,6 +112,14 @@ module SimplyStored
       
       def soft_deleting_enabled?
         !soft_delete_attribute.nil?
+      end
+      
+      def auto_conflict_resolution_on_save
+        @auto_conflict_resolution_on_save.nil? ? true : @auto_conflict_resolution_on_save
+      end
+      
+      def auto_conflict_resolution_on_save=(val)
+        @auto_conflict_resolution_on_save = val
       end
       
       def simpledb_string(*names)

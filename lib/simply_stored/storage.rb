@@ -6,7 +6,7 @@ module SimplyStored
       end
       
       def s3_connection(name)
-        @_s3_connection ||= RightAws::S3.new(_s3_options[name][:access_key], _s3_options[name][:secret_access_key], :multi_thread => true, :ca_file => _s3_options[name][:ca_file])
+        @_s3_connection ||= RightAws::S3.new(_s3_options[name][:access_key], _s3_options[name][:secret_access_key], :multi_thread => true, :ca_file => _s3_options[name][:ca_file], :logger => _s3_options[name][:logger])
       end
     
       def s3_bucket(name)
@@ -21,6 +21,7 @@ module SimplyStored
       end
     
       def save(validate = true)
+        update_attachment_sizes
         if ret = super(validate)
           save_attachments
         end
@@ -28,6 +29,7 @@ module SimplyStored
       end
       
       def save!(*args)
+        update_attachment_sizes
         super
         save_attachments
       end
@@ -64,6 +66,17 @@ module SimplyStored
           end
         end
       end
+      
+      def update_attachment_sizes
+        if @_s3_attachments
+          @_s3_attachments.each do |name, attachment|
+            if attachment[:dirty]
+              value = attachment[:value].is_a?(String) ? attachment[:value] : attachment[:value].to_json
+              send("#{name}_size=", (value.size rescue nil))
+            end
+          end
+        end
+      end
     
       def s3_attachment_key(name)
         "#{self.class.name.tableize}/#{name}/#{id}"
@@ -72,22 +85,30 @@ module SimplyStored
     
     module ClassMethods
       def has_s3_attachment(name, options = {})
-        require 'awsbase/right_awsbase'
-        require 's3/right_s3'
-        require 's3/right_s3_interface'
+        require 'right_aws'
+        
+        name = name.to_sym
         
         self.class.instance_eval do
           attr_accessor :_s3_options
         end
         
-        name = name.to_sym
+        self.class_eval do
+          if respond_to?(:property)
+            property "#{name}_size"
+          else
+            simpledb_integer "#{name}_size"
+          end
+        end
+        
         raise ArgumentError, "No bucket name specified for attachment #{name}" if options[:bucket].blank?
         options = {
           :permissions => 'private', 
           :ssl => true, 
           :location => :us, # use :eu for European buckets
           :ca_file => nil, # point to CA file for SSL certificate verification
-          :after_delete => :nothing # or :delete to delete the item on S3 after it is deleted in the DB
+          :after_delete => :nothing, # or :delete to delete the item on S3 after it is deleted in the DB,
+          :logger => nil # use the default RightAws logger (stdout)
         }.update(options)
         self._s3_options ||= {}
         self._s3_options[name] = options

@@ -10,6 +10,8 @@ Both backends have also support for S3 attachments.
 See also [RockingChair](http://github.com/jweiss/rocking_chair) on how to speed-up your unit tests 
 by using an in-memory CouchDB backend.
 
+More examples on how to work with SimplyStored can be found [here](http://github.com/jweiss/simply_stored_examples)
+
 Installation
 ============
 
@@ -177,7 +179,8 @@ Both the CouchDB backend and the SimpleDB backend have support for S3 attachment
                                :access_key => 'my-AWS-key-id',
                                :secret_access_key => 'psst!-secret',
                                :location => :eu,
-                               :after_delete => :delete
+                               :after_delete => :delete,
+                               :logger => Logger.new('/dev/null')
       
     end
     
@@ -185,6 +188,9 @@ Both the CouchDB backend and the SimpleDB backend have support for S3 attachment
     log.data = File.read('/var/log/messages')
     log.save
     # => true
+    
+    log.data_size
+    # => 11238132
     
 This will create an item on S3 in the specified bucket. The item will use the ID of the log object as the key and the body will be the data attribute. This way you can store big files outside of CouchDB or SimpleDB.    
     
@@ -213,6 +219,37 @@ SimplyStored also has support for "soft deleting" - much like acts_as_paranoid. 
     Document.find_all_by_title('secret project info', :with_deleted => true)
     # => [doc]
 
+CouchDB - Auto resolution of conflicts on save
+
+SimplyStored now by default retries conflicted save operations if it is possible to resolve the conflict.
+Solving the conflict means that if updated were done one different attributes the local object will 
+refresh those attributes and try to save again. This will be tried two times by default. Afterwards the conflict
+exception will be re-raised.
+  
+This feature can be controlled on the class level like this: 
+    User.auto_conflict_resolution_on_save = true | false
+    
+If auto_conflict_resolution_on_save is enabled, something like this will work:
+
+    class Document
+      include SimplyStored::Couch
+      
+      property :title
+      property :content
+    end
+    
+    original = Document.create(:title => 'version 1', :content => 'Hi there')
+    
+    other_client = Document.find(original.id)
+    
+    original.title = 'version 2'
+    original.save!
+    
+    other_client.content = 'A better version'
+    other_client.save!  # -> this line would fail without auto_conflict_resolution_on_save
+    
+    other_client.title 
+    # => 'version 2'
 
 License
 =============

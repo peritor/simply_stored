@@ -15,11 +15,15 @@ module SimplyStored
     end
 
     def save(validate = true)
-      CouchPotato.database.save_document(self, validate)
+      retry_on_conflict do
+        CouchPotato.database.save_document(self, validate)
+      end
     end
 
     def save!
-      CouchPotato.database.save_document!(self)
+      retry_on_conflict do
+        CouchPotato.database.save_document!(self)
+      end
     end
 
     def destroy(override_soft_delete=false)
@@ -63,6 +67,53 @@ module SimplyStored
     end
     
     protected
+    
+    def retry_on_conflict(max_retries = 2, &blk)
+      retry_count = 0
+      begin
+        blk.call
+      rescue RestClient::Conflict => e
+        if self.class.auto_conflict_resolution_on_save && retry_count < max_retries && try_to_merge_conflict
+          retry_count += 1
+          retry
+        else
+          raise e
+        end
+      end
+    end
+    
+    def try_to_merge_conflict
+      original = self.class.find(id)
+      our_attributes = self.attributes.dup
+      their_attributes = original.attributes.dup
+      [:updated_at, :created_at, :id, :rev, :_id, :_rev].each do |skipped_attribute|
+        our_attributes.delete(skipped_attribute)
+        their_attributes.delete(skipped_attribute)
+      end
+      if _merge_possible?(our_attributes, their_attributes)
+        _copy_non_conflicting_attributes(our_attributes, their_attributes)
+        self._rev = original._rev
+        true
+      else
+        false
+      end
+    end
+    
+    def _copy_non_conflicting_attributes(our_attributes, their_attributes)
+      their_attributes.each do |attr_name, their_value|
+        if !self.send("#{attr_name}_changed?") && our_attributes[attr_name] != their_value
+          self.send("#{attr_name}=", their_value)
+        end
+      end
+    end
+    
+    def _merge_possible?(our_attributes, their_attributes)
+      their_attributes.all? do |attr_name, their_value|
+        our_attributes[attr_name] == their_value || # same
+        !self.send("#{attr_name}_changed?") || # we didn't change
+        self.send("#{attr_name}_changed?") && their_value == self.send("#{attr_name}_was") # we changed and they kept the original
+      end
+    end
     
     def reset_association_caches
       self.class.properties.each do |property|
