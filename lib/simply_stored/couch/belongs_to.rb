@@ -89,9 +89,6 @@ module SimplyStored
           end
         end
       
-        def save(object)
-        end
-
         def dirty?(object)
           object.send("#{name}_id_was") != object.send("#{name}_id")
         end
@@ -100,10 +97,6 @@ module SimplyStored
           object.send("#{name}_id_was=", object.send("#{name}_id"))
         end
         
-        def destroy(object)
-        
-        end
-      
         def build(object, json)
           object.send "#{name}_id=", json["#{name}_id"]
           object.send "#{name}_id_was=", json["#{name}_id"]
@@ -112,6 +105,7 @@ module SimplyStored
         def serialize(json, object)
           json["#{name}_id"] = object.send("#{name}_id") if object.send("#{name}_id")
         end
+        alias :value :serialize
       
         def item_class_name
           @name.to_s.camelize

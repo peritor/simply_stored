@@ -174,14 +174,8 @@ module SimplyStored
           end
         end
         
-        def save(object)
-        end
-
         def dirty?(object)
           false
-        end
-
-        def destroy(object)
         end
 
         def build(object, json)
@@ -189,6 +183,7 @@ module SimplyStored
 
         def serialize(json, object)
         end
+        alias :value :serialize
         
         def supports_dirty?
           false
