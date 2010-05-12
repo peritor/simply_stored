@@ -11,6 +11,15 @@ Rake::TestTask.new(:test) do |t|
   t.verbose = true
 end
 
+def name
+  'simply_stored'
+end
+
+def source_version
+  line = File.read("lib/#{name.gsub(/-/, "/")}.rb")[/^\s*VERSION\s*=\s*.*/]
+  line.match(/.*VERSION\s*=\s*['"](.*)['"]/)[1]
+end
+
 begin
   require 'jeweler'
   Jeweler::Tasks.new do |s|
@@ -24,7 +33,8 @@ begin
     s.add_dependency('rest-client', '>= 1.4.2')
     s.add_dependency('couch_potato', '>= 0.2.15')
     s.add_dependency('activesupport')
-    s.add_dependency('validatable')
+    s.add_dependency('mattmatt-validatable')
+    s.version = source_version
   end
   Jeweler::GemcutterTasks.new
 rescue LoadError
