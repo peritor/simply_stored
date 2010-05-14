@@ -700,6 +700,22 @@ class CouchTest < Test::Unit::TestCase
             assert_equal [], Tag.find(:all)
           end
           
+          should "not nullify or delete dependents if the options is set to :ignore when removing" do
+            master = Master.create
+            master_id = master.id
+            servant = Servant.create(:master => master)
+            master.remove_servant(servant)
+            assert_equal master_id, servant.reload.master_id
+          end
+          
+          should "not nullify or delete dependents if the options is set to :ignore when deleting" do
+            master = Master.create
+            master_id = master.id
+            servant = Servant.create(:master => master)
+            master.destroy
+            assert_equal master_id, servant.reload.master_id
+          end
+          
         end
         
         context "when removing all items" do

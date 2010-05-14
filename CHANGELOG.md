@@ -1,6 +1,9 @@
 Changelog
 =============
 
+- Introduce :ignore option to has_many :dependent option. If :dependent is set to :ignore, 
+  dependent objects will not be deleted or nullified but just ignored.
+
 0.3.0
 =============
 

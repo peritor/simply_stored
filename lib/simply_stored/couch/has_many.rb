@@ -84,12 +84,14 @@ module SimplyStored
           klass = self.class.get_class_from_name(name)
           raise ArgumentError, "expected #{klass} got #{value.class}" unless value.is_a?(klass)
           raise ArgumentError, "cannot remove not mine" unless value.send(self.class.foreign_key.to_sym) == id
-          
+
           if self.class._find_property(name).options[:dependent] == :destroy
             value.destroy
-          else
+          elsif self.class._find_property(name).options[:dependent] == :ignore
+            # skip
+          else # nullify
             value.send("#{self.class.foreign_key}=", nil) 
-            value.save
+            value.save(false)
           end
           
           cached_results = send("_get_cached_#{name}")[:all]

@@ -152,7 +152,10 @@ module SimplyStored
             case property.options[:dependent]
             when :destroy
               dependent.destroy
-            else
+            when :ignore
+              # skip
+            else 
+              # nullify
               unless dependent.class.soft_deleting_enabled?
                 dependent.send("#{self.class.foreign_property}=", nil)
                 dependent.save(false)

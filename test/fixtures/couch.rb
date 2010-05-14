@@ -180,3 +180,15 @@ class Spot
   
   has_one :hemorrhoid
 end
+
+class Master
+  include SimplyStored::Couch
+  
+  has_many :servants, :dependent => :ignore
+end
+
+class Servant
+  include SimplyStored::Couch
+  
+  belongs_to :master
+end
