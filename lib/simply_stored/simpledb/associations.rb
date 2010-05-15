@@ -6,9 +6,13 @@ module SimplyStored
       end
     
       module ClassMethods
-        def belongs_to(klass_name)
-          define_belongs_to_getter(klass_name)
-          define_belongs_to_setter(klass_name)
+        def belongs_to(name, options = nil)
+          options = {
+            :class_name => self.formalize_class_name(name),
+            :foreign_key => "#{name}_id"
+          }.update(options || {})
+          define_belongs_to_getter(name, options)
+          define_belongs_to_setter(name, options)
         end
   
         def has_one(klass_name, options = {})
@@ -35,24 +39,28 @@ module SimplyStored
           define_has_many_dependent_clearing(klass_name, options)
         end
       
-        def define_belongs_to_getter(klass_name)
-          define_method klass_name.to_s do
+        def define_belongs_to_getter(name, options)
+          klass_name = options[:class_name]
+          foreign_key_column = options[:foreign_key]
+          define_method(name.to_s) do
             klass = self.class.get_class_from_name(klass_name)
-            cached_version = instance_variable_get("@_cached_belongs_to_#{klass_name}")
-            if cached_version.nil? and self["#{klass_name}_id"].present?
-              cached_version = klass.find(self.send("#{klass_name}_id"), :auto_load => true)
-              instance_variable_set("@_cached_belongs_to_#{klass_name}", cached_version)
+            cached_version = instance_variable_get("@_cached_belongs_to_#{name}")
+            if cached_version.nil? and self[foreign_key_column].present?
+              cached_version = klass.find(self.send(foreign_key_column), :auto_load => true)
+              instance_variable_set("@_cached_belongs_to_#{name}", cached_version)
             end
             cached_version
           end
         end
 
-        def define_belongs_to_setter(klass_name)
-          define_method "#{klass_name}=" do |val|
+        def define_belongs_to_setter(name, options)
+          klass_name = options[:class_name]
+          foreign_key_column = options[:foreign_key]
+          define_method("#{name}=") do |val|
             klass = self.class.get_class_from_name(klass_name)
             raise ArgumentError, "expected #{klass} got #{val.class}" unless val.is_a?(klass)
-            self.send("#{klass_name}_id=", val.id)
-            instance_variable_set("@_cached_belongs_to_#{klass_name}", val)
+            self.send("#{foreign_key_column}=", val.id)
+            instance_variable_set("@_cached_belongs_to_#{name}", val)
           end
         end
 
