@@ -206,7 +206,7 @@ module SimplyStored
     end
   
     def self.get_class_from_name(klass_name)
-      klass_name.to_s.gsub('__','/').gsub('__','::').classify.constantize
+      klass_name.to_s.gsub('__','/').classify.constantize
     end
   end
 end
