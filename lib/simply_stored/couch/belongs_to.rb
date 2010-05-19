@@ -10,17 +10,18 @@ module SimplyStored
               if (doc['#{soft_delete_attribute}'] && doc['#{soft_delete_attribute}'] != null){
                 // "soft" deleted
               }else{
-                emit([doc.#{name.to_s}_id, doc.created_at], null);
+                emit([doc.#{name.to_s}_id, doc.created_at], 1);
               }
             }
           }
         eos
         
-        reduce_definition = <<-eos
-          function(key, values) {
-            return values.length;
-          }
-        eos
+        reduce_definition = "_sum"
+        # reduce_definition = <<-eos
+        #   function(key, values) {
+        #     return sum(values);
+        #   }
+        # eos
          
         view "association_#{self.name.underscore}_belongs_to_#{name}",
           :map => map_definition_without_deleted,
@@ -31,7 +32,7 @@ module SimplyStored
         map_definition_with_deleted = <<-eos
           function(doc) { 
             if (doc['ruby_class'] == '#{self.to_s}' && doc['#{name.to_s}_id'] != null) {
-              emit([doc.#{name.to_s}_id, doc.created_at], null);
+              emit([doc.#{name.to_s}_id, doc.created_at], 1);
             }
           }
         eos
