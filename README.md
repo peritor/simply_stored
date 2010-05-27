@@ -136,6 +136,19 @@ The supported associations are: belongs_to, has_one, has_many, and has_many :thr
     post.user_count
     # => 2
     
+    
+CouchDB - Custom Associations
+
+    class Document
+      include SimplyStored::Couch
+
+      belongs_to :creator, :class_name => "User"
+      belongs_to :updater, :class_name => "User"
+    end
+    
+    d = Document.new
+    d.creator = User.first
+        
 
 CouchDB - Validations
 =============

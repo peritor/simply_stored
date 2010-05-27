@@ -1,6 +1,8 @@
 Changelog
 =============
 
+- Add support for associations not named after the class [akm]
+
 0.3.3
 
 - Fix association counting bug
