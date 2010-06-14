@@ -5,15 +5,15 @@ module SimplyStored
         properties << SimplyStored::Couch::HasMany::Property.new(self, name, options)
       end
 
-      def define_has_many_getter(name)
+      def define_has_many_getter(name, options)
         define_method(name) do |*args|
-          options = args.first && args.first.is_a?(Hash) && args.first
-          if options
-            options.assert_valid_keys(:force_reload, :with_deleted, :limit, :order)
-            forced_reload = options.delete(:force_reload)
-            with_deleted = options[:with_deleted]
-            limit = options[:limit]
-            descending = (options[:order] == :desc) ? true : false
+          local_options = args.first && args.first.is_a?(Hash) && args.first
+          if local_options
+            local_options.assert_valid_keys(:force_reload, :with_deleted, :limit, :order)
+            forced_reload = local_options.delete(:force_reload)
+            with_deleted = local_options[:with_deleted]
+            limit = local_options[:limit]
+            descending = (local_options[:order] == :desc) ? true : false
           else
             forced_reload = false
             with_deleted = false
@@ -22,25 +22,25 @@ module SimplyStored
           end
 
           cached_results = cached_results = send("_get_cached_#{name}")
-          cache_key = _cache_key_for(options)
+          cache_key = _cache_key_for(local_options)
           if forced_reload || cached_results[cache_key].nil? 
-            cached_results[cache_key] = find_associated(name, self.class, :with_deleted => with_deleted, :limit => limit, :descending => descending)
+            cached_results[cache_key] = find_associated(options[:class_name], self.class, :with_deleted => with_deleted, :limit => limit, :descending => descending, :foreign_key => options[:foreign_key])
             instance_variable_set("@#{name}", cached_results)
           end
           cached_results[cache_key]
         end
       end
       
-      def define_has_many_through_getter(name, through)
+      def define_has_many_through_getter(name, options, through)
         raise ArgumentError, "no such relation: #{self} - #{through}" unless instance_methods.map(&:to_sym).include?(through.to_sym)
         
         define_method(name) do |*args|
-          options = args.first && args.first.is_a?(Hash) && args.first
-          if options
-            options.assert_valid_keys(:force_reload, :with_deleted, :limit)
-            forced_reload = options[:force_reload]
-            with_deleted = options[:with_deleted]
-            limit = options[:limit]
+          local_options = args.first && args.first.is_a?(Hash) && args.first
+          if local_options
+            local_options.assert_valid_keys(:force_reload, :with_deleted, :limit)
+            forced_reload = local_options[:force_reload]
+            with_deleted = local_options[:with_deleted]
+            limit = local_options[:limit]
           else
             forced_reload = false
             with_deleted = false
@@ -48,12 +48,12 @@ module SimplyStored
           end
           
           cached_results = send("_get_cached_#{name}")
-          cache_key = _cache_key_for(options)
+          cache_key = _cache_key_for(local_options)
           
           if forced_reload || cached_results[cache_key].nil?
             
             # there is probably a faster way to query this
-            intermediate_objects = find_associated(through, self.class, :with_deleted => with_deleted, :limit => limit)
+            intermediate_objects = find_associated(through, self.class, :with_deleted => with_deleted, :limit => limit, :foreign_key => options[:foreign_key])
             
             through_objects = intermediate_objects.map do |intermediate_object|
               intermediate_object.send(name.to_s.singularize.underscore, :with_deleted => with_deleted)
@@ -65,7 +65,7 @@ module SimplyStored
         end
       end
       
-      def define_has_many_setter_add(name)
+      def define_has_many_setter_add(name, options)
         define_method("add_#{name.to_s.singularize}") do |value|
           klass = self.class.get_class_from_name(name)
           raise ArgumentError, "expected #{klass} got #{value.class}" unless value.is_a?(klass)
@@ -79,15 +79,15 @@ module SimplyStored
         end
       end
 
-      def define_has_many_setter_remove(name)
+      def define_has_many_setter_remove(name, options)
         define_method "remove_#{name.to_s.singularize}" do |value|
           klass = self.class.get_class_from_name(name)
           raise ArgumentError, "expected #{klass} got #{value.class}" unless value.is_a?(klass)
           raise ArgumentError, "cannot remove not mine" unless value.send(self.class.foreign_key.to_sym) == id
 
-          if self.class._find_property(name).options[:dependent] == :destroy
+          if options[:dependent] == :destroy
             value.destroy
-          elsif self.class._find_property(name).options[:dependent] == :ignore
+          elsif options[:dependent] == :ignore
             # skip
           else # nullify
             value.send("#{self.class.foreign_key}=", nil) 
@@ -100,7 +100,7 @@ module SimplyStored
         end
       end
       
-      def define_has_many_setter_remove_all(name)
+      def define_has_many_setter_remove_all(name, options)
         define_method "remove_all_#{name}" do
           all = send("#{name}", :force_reload => true)
           
@@ -110,27 +110,27 @@ module SimplyStored
         end
       end
       
-      def define_has_many_count(name, through = nil)
+      def define_has_many_count(name, options, through = nil)
         method_name = name.to_s.singularize.underscore + "_count"
         define_method(method_name) do |*args|
-          options = args.first && args.first.is_a?(Hash) && args.first
-          if options
-            options.assert_valid_keys(:force_reload, :with_deleted)
-            forced_reload = options[:force_reload]
-            with_deleted = options[:with_deleted]
+          local_options = args.first && args.first.is_a?(Hash) && args.first
+          if local_options
+            local_options.assert_valid_keys(:force_reload, :with_deleted)
+            forced_reload = local_options[:force_reload]
+            with_deleted = local_options[:with_deleted]
           else
             forced_reload = false
             with_deleted = false
           end
 
           if forced_reload || instance_variable_get("@#{method_name}").nil?
-            instance_variable_set("@#{method_name}", count_associated(through || name, self.class, :with_deleted => with_deleted))
+            instance_variable_set("@#{method_name}", count_associated(through || options[:class_name], self.class, :with_deleted => with_deleted, :foreign_key => options[:foreign_key]))
           end
           instance_variable_get("@#{method_name}")
         end
       end
       
-      def define_cache_accessors(name)
+      def define_cache_accessors(name, options)
         define_method "_get_cached_#{name}" do
           instance_variable_get("@#{name}") || {}
         end
@@ -141,8 +141,8 @@ module SimplyStored
           instance_variable_set("@#{name}", cached)
         end
         
-        define_method "_cache_key_for" do |options|
-          options.blank? ? :all : options.to_s
+        define_method "_cache_key_for" do |opt|
+          opt.blank? ? :all : opt.to_s
         end
       end
       
@@ -152,26 +152,28 @@ module SimplyStored
         def initialize(owner_clazz, name, options = {})
           options = {
             :dependent => :nullify,
-            :through => nil
+            :through => nil,
+            :class_name => name.to_s.singularize.camelize,
+            :foreign_key => owner_clazz.name.singularize.underscore.foreign_key
           }.update(options)
           @name, @options = name, options
           
-          options.assert_valid_keys(:dependent, :through)
+          options.assert_valid_keys(:dependent, :through, :class_name, :foreign_key)
           
           if options[:through]
             owner_clazz.class_eval do
-              define_cache_accessors(name)
-              define_has_many_through_getter(name, options[:through])
-              define_has_many_count(name, options[:through])
+              define_cache_accessors(name, options)
+              define_has_many_through_getter(name, options, options[:through])
+              define_has_many_count(name, options, options[:through])
             end
           else
             owner_clazz.class_eval do
-              define_cache_accessors(name)
-              define_has_many_getter(name)
-              define_has_many_setter_add(name)
-              define_has_many_setter_remove(name)
-              define_has_many_setter_remove_all(name)
-              define_has_many_count(name)
+              define_cache_accessors(name, options)
+              define_has_many_getter(name, options)
+              define_has_many_setter_add(name, options)
+              define_has_many_setter_remove(name, options)
+              define_has_many_setter_remove_all(name, options)
+              define_has_many_count(name, options)
             end
           end
         end

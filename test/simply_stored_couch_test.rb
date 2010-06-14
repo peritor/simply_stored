@@ -474,6 +474,25 @@ class CouchTest < Test::Unit::TestCase
             assert_nil post.user
           end
         end
+        
+        context "with aliased associations" do
+          should "allow different names for the same class" do
+            editor = User.create(:name => 'Editor', :title => 'Dr.')
+            author = User.create(:name => 'author', :title => 'Dr.')
+            assert_not_nil editor.id, editor.errors.inspect
+            assert_not_nil author.id, author.errors.inspect
+            
+            doc = Document.create(:editor => editor, :author => author)
+            doc.save!
+            assert_equal editor.id, doc.editor_id
+            assert_equal author.id, doc.author_id
+            doc = Document.find(doc.id)
+            assert_not_nil doc.editor, doc.inspect
+            assert_not_nil doc.author
+            assert_equal editor.id, doc.editor.id
+            assert_equal author.id, doc.author.id
+          end
+        end
       end
       
       context "with has_many" do

@@ -72,8 +72,8 @@ module SimplyStored
       retry_count = 0
       begin
         blk.call
-      rescue RestClient::Conflict => e
-        if self.class.auto_conflict_resolution_on_save && retry_count < max_retries && try_to_merge_conflict
+      rescue RestClient::Exception, RestClient::Conflict => e
+        if (e.http_code == 409 || e.is_a?(RestClient::Conflict)) && self.class.auto_conflict_resolution_on_save && retry_count < max_retries && try_to_merge_conflict
           retry_count += 1
           retry
         else
@@ -175,6 +175,7 @@ module SimplyStored
     end
     
     def find_associated(from, to, options = {})
+      foreign_key = options.delete(:foreign_key).gsub(/_id$/, '')
       view_options = {}
       view_options[:reduce] = false
       view_options[:descending] = options[:descending] if options[:descending]
@@ -189,11 +190,11 @@ module SimplyStored
       if options[:with_deleted]
         CouchPotato.database.view(
           self.class.get_class_from_name(from).send(
-            "association_#{from.to_s.singularize.underscore}_belongs_to_#{to.name.singularize.underscore}_with_deleted", view_options))
+            "association_#{from.to_s.singularize.underscore}_belongs_to_#{foreign_key}_with_deleted", view_options))
       else
         CouchPotato.database.view(
           self.class.get_class_from_name(from).send(
-            "association_#{from.to_s.singularize.underscore}_belongs_to_#{to.name.singularize.underscore}", view_options))
+            "association_#{from.to_s.singularize.underscore}_belongs_to_#{foreign_key}", view_options))
       end
     end
     

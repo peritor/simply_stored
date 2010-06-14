@@ -10,6 +10,7 @@ class User
   has_many :strict_posts
   has_many :hemorrhoids
   has_many :pains, :through => :hemorrhoids
+  has_many :docs, :class_name => "Document", :foreign_key => "editor_id"
   
   view :by_name_and_created_at, :key => [:name, :created_at]
 end
@@ -42,6 +43,13 @@ class Category
   property :parent
   
   validates_inclusion_of :name, :in => ["food", "drinks", "party"], :allow_blank => true
+end
+
+class Document
+  include SimplyStored::Couch
+  
+  belongs_to :author, :class_name => "User"
+  belongs_to :editor, :class_name => "User"
 end
 
 class Tag

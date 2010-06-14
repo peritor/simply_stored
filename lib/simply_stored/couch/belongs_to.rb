@@ -3,7 +3,7 @@ module SimplyStored
   module Couch
     module BelongsTo
       
-      def belongs_to(name)
+      def belongs_to(name, options = {})
         map_definition_without_deleted = <<-eos
           function(doc) { 
             if (doc['ruby_class'] == '#{self.to_s}' && doc['#{name.to_s}_id'] != null) {
@@ -43,32 +43,37 @@ module SimplyStored
           :type => "custom",
           :include_docs => true
             
-        properties << SimplyStored::Couch::BelongsTo::Property.new(self, name)
+        properties << SimplyStored::Couch::BelongsTo::Property.new(self, name, options)
       end
 
       class Property #:nodoc:
         attr_accessor :name, :options
       
         def initialize(owner_clazz, name, options = {})
-          @name, @options = name, options
-          item_class_name = self.item_class_name
+          @name = name
+          @options = {
+            :class_name => name.to_s.singularize.camelize
+          }.update(options)
+
+          @options.assert_valid_keys(:class_name)
+
           owner_clazz.class_eval do
             attr_reader "#{name}_id"
             attr_accessor "#{name}_id_was"
             property "#{name}_id"
             
             define_method name do |*args|
-              options = args.last.is_a?(Hash) ? args.last : {}
-              options.assert_valid_keys(:force_reload, :with_deleted)
-              forced_reload = options[:force_reload] || false
-              with_deleted = options[:with_deleted] || false
+              local_options = args.last.is_a?(Hash) ? args.last : {}
+              local_options.assert_valid_keys(:force_reload, :with_deleted)
+              forced_reload = local_options[:force_reload] || false
+              with_deleted = local_options[:with_deleted] || false
               
               return instance_variable_get("@#{name}") unless instance_variable_get("@#{name}").nil? or forced_reload
-              instance_variable_set("@#{name}", send("#{name}_id").present? ? Object.const_get(item_class_name).find(send("#{name}_id"), :with_deleted => with_deleted) : nil)
+              instance_variable_set("@#{name}", send("#{name}_id").present? ? Object.const_get(self.class._find_property(name).options[:class_name]).find(send("#{name}_id"), :with_deleted => with_deleted) : nil)
             end
           
             define_method "#{name}=" do |value|
-              klass = self.class.get_class_from_name(name)
+              klass = self.class.get_class_from_name(self.class._find_property(name).options[:class_name])
               raise ArgumentError, "expected #{klass} got #{value.class}" unless value.nil? || value.is_a?(klass)
 
               instance_variable_set("@#{name}", value)
@@ -107,11 +112,7 @@ module SimplyStored
           json["#{name}_id"] = object.send("#{name}_id") if object.send("#{name}_id")
         end
         alias :value :serialize
-      
-        def item_class_name
-          @name.to_s.camelize
-        end
-      
+            
         def association?
           true
         end
