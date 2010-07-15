@@ -34,6 +34,10 @@ module SimplyStored
         def message(instance)
           super || "is invalid"
         end
+        
+        def i18n
+          super || "#{i18n_prefix}.invalid"
+        end
       end
   
       class ValidatesUniquenessOf < ::Validatable::ValidationBase
@@ -49,6 +53,10 @@ module SimplyStored
         
         def message(instance)
           super || "#{attribute.to_s.try(:humanize) || attribute.to_s} is already taken"
+        end
+        
+        def i18n
+          super || "#{i18n_prefix}.not_unique"
         end
       end
       
