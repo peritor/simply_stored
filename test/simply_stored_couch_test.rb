@@ -1238,6 +1238,15 @@ class CouchTest < Test::Unit::TestCase
           user = UniqueUser.create(:name => "Host Master")
           assert_equal "Name is already taken", user.errors.on(:name)
         end
+        
+        should 'create a view to check with' do
+          assert UniqueUser.respond_to?(:by_name)
+          assert_equal :name, UniqueUser.by_name.send(:options)[:key]
+        end
+
+        should 'not overwrite the view when a custom one already exists' do
+          assert_equal :email, UniqueUserWithAView.by_name.send(:options)[:key]
+        end
       end
     end
     

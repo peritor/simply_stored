@@ -62,7 +62,9 @@ module SimplyStored
       
       def validates_uniqueness_of(*args)
         args.each do |name|
-          view "by_#{name}", :key => name
+          if not respond_to?("by_#{name}")
+            view "by_#{name}", :key => name
+          end
         end
         
         add_validations(args, ValidatesUniquenessOf)

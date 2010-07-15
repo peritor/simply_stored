@@ -4,7 +4,8 @@ require 'shoulda'
 require 'mocha'
 require 'active_support'
 require 'active_support/testing/assertions'
-
+$:.unshift(File.expand_path(File.dirname(__FILE__) + "/../lib"))
+puts File.expand_path(File.dirname(__FILE__) + "/lib")
 require 'simply_stored/couch'
 require 'simply_stored/simpledb'
 

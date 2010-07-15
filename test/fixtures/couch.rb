@@ -87,6 +87,14 @@ class UniqueUser
   validates_uniqueness_of :name
 end
 
+class UniqueUserWithAView
+  include SimplyStored::Couch
+  
+  view :by_name, :key => :email
+  property :name
+  validates_uniqueness_of :name
+end
+
 class CountMe
   include SimplyStored::Couch
   
