@@ -1,5 +1,5 @@
-require File.expand_path(File.dirname(__FILE__) + '/test_helper')
-require File.expand_path(File.dirname(__FILE__) + '/fixtures/couch')
+require File.expand_path(File.dirname(__FILE__) + '/../test_helper')
+require File.expand_path(File.dirname(__FILE__) + '/../fixtures/couch')
 
 class CouchS3Test < Test::Unit::TestCase
   context "with s3 interaction" do

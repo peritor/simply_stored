@@ -1,5 +1,6 @@
-require File.expand_path(File.dirname(__FILE__) + '/test_helper')
-require File.expand_path(File.dirname(__FILE__) + '/fixtures/couch')
+require File.expand_path(File.dirname(__FILE__) + '/../test_helper')
+require File.expand_path(File.dirname(__FILE__) + '/../fixtures/couch')
+
 class CouchMassAssignmentProtectionTest < Test::Unit::TestCase
   context "attribute proctection against mass assignment" do
     setup do
