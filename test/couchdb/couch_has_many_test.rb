@@ -368,6 +368,32 @@ class CouchHasManyTest < Test::Unit::TestCase
           assert_nil post.user_id
         end
       end
+
+      context "fetching objects with couchdb query options" do
+        setup do
+          @user = User.create(:title => "Mr.", :_id => 'one')
+          @post = Post.create(:user => @user, :_id => 'two')
+          @post2 = Post.create(:user => @user, :_id => 'four')
+          @post2.created_at = Time.now + 2
+          @post2.save!
+        end
+
+        should "allow options to specify start and end document ids" do
+          %w{startkey_docid endkey_docid}.each do |option|
+            assert_nothing_raised do
+              @user.posts(option.to_sym => 'some key')
+            end
+          end
+        end
+
+        should "fetch documents starting at the specified id" do
+          @user2 = User.create(:title => 'Mrs.')
+          @post3 = Post.create(:user => @user2)
+          posts = @user.posts(:startkey_docid => @post.id)
+          assert_equal 1, posts.size
+          assert_equal @post2, posts.first
+        end
+      end
     end
     
     context "with has_many :trough" do

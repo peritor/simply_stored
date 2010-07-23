@@ -180,13 +180,15 @@ module SimplyStored
       view_options[:reduce] = false
       view_options[:descending] = options[:descending] if options[:descending]
       if view_options[:descending]
-        view_options[:startkey] = ["#{id}\u9999"]
+        view_options[:startkey] = ["#{id}", {}]
         view_options[:endkey] = [id]
       else
         view_options[:startkey] = [id]
-        view_options[:endkey] = ["#{id}\u9999"]
+        view_options[:endkey] = ["#{id}", {}]
       end
       view_options[:limit] = options[:limit] if options[:limit]
+      view_options.update(options.reject{|key, value| ![:startkey_docid, :endkey_docid].include?(key)})
+
       if options[:with_deleted]
         CouchPotato.database.view(
           self.class.get_class_from_name(from).send(
