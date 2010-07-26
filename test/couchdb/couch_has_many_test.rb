@@ -379,7 +379,7 @@ class CouchHasManyTest < Test::Unit::TestCase
         end
 
         should "allow options to specify start and end document ids" do
-          %w{startkey_docid endkey_docid}.each do |option|
+          %w{startkey_docid endkey_docid endkey startkey}.each do |option|
             assert_nothing_raised do
               @user.posts(option.to_sym => 'some key')
             end
@@ -389,9 +389,9 @@ class CouchHasManyTest < Test::Unit::TestCase
         should "fetch documents starting at the specified id" do
           @user2 = User.create(:title => 'Mrs.')
           @post3 = Post.create(:user => @user2)
-          posts = @user.posts(:startkey_docid => @post.id)
+          posts = @user.posts(:startkey_docid => @post.id, :startkey => [@user.id, @post.created_at])
           assert_equal 1, posts.size
-          assert_equal @post2, posts.first
+          assert_equal @post, posts.first
         end
       end
     end
