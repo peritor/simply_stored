@@ -374,8 +374,6 @@ class CouchHasManyTest < Test::Unit::TestCase
           @user = User.create(:title => "Mr.", :_id => 'one')
           @post = Post.create(:user => @user, :_id => 'two')
           @post2 = Post.create(:user => @user, :_id => 'four')
-          @post2.created_at = Time.now + 2
-          @post2.save!
         end
 
         should "allow options to specify start and end document ids" do
@@ -389,7 +387,7 @@ class CouchHasManyTest < Test::Unit::TestCase
         should "fetch documents starting at the specified id" do
           @user2 = User.create(:title => 'Mrs.')
           @post3 = Post.create(:user => @user2)
-          posts = @user.posts(:startkey_docid => @post.id, :startkey => [@user.id, @post.created_at])
+          posts = @user.posts(:range_from => @post.created_at, :startkey_docid => @post.id)
           assert_equal 1, posts.size
           assert_equal @post, posts.first
         end

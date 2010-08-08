@@ -183,10 +183,11 @@ module SimplyStored
         view_options[:startkey] = ["#{id}", {}]
         view_options[:endkey] = [id]
       else
-        view_options[:startkey] = options[:startkey] || [id]
+        view_options[:startkey] = options[:startkey] || (options[:range_from] ? [id, options[:range_from]] : [id])
         view_options[:endkey] = options[:endkey] || ["#{id}", {}]
       end
       view_options[:limit] = options[:limit] if options[:limit]
+
       view_options.update(options.reject{|key, value| ![:startkey_docid, :endkey_docid].include?(key)})
 
       if options[:with_deleted]
