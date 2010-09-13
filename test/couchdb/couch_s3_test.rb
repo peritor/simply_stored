@@ -162,7 +162,7 @@ class CouchS3Test < Test::Unit::TestCase
         @log_item._s3_options[:log_data][:location] = :us
         @log_item._s3_options[:log_data][:permissions] = 'private'
         @log_item.save
-        assert @log_item.log_data_url.include?("https://bucket-for-monsieur.s3.amazonaws.com:443/#{@log_item.s3_attachment_key(:log_data)}"), @log_item.log_data_url
+        assert @log_item.log_data_url.gsub("%2F", '/').include?("https://bucket-for-monsieur.s3.amazonaws.com:443/#{@log_item.s3_attachment_key(:log_data)}"), @log_item.log_data_url
         assert @log_item.log_data_url.include?("Signature=")
         assert @log_item.log_data_url.include?("Expires=")
       end
