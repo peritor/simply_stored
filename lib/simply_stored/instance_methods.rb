@@ -7,7 +7,7 @@ module SimplyStored
     end
     
     def ==(other)
-      other._id == _id && other._rev == _rev
+      other.kind_of?(SimplyStored::Couch) && other._id == _id && other._rev == _rev
     end
 
     def eql?(other)

@@ -122,5 +122,21 @@ class CouchValidationsTest < Test::Unit::TestCase
         assert_equal :email, UniqueUserWithAView.by_name.send(:options)[:key]
       end
     end
+    
+    context "equality" do
+      should "know when two objects are equal" do
+        user = UniqueUser.create(:name => "Host Master")
+        other_user = UniqueUser.create(:name => "The other one")
+        assert user == user
+        assert user != other_user
+      end
+      
+      should "not bail when comparing with non-SimplyStored objects" do
+        user = UniqueUser.create(:name => "Host Master")
+        assert 5 != user
+        assert user != 5
+      end
+    end
+    
   end
 end
