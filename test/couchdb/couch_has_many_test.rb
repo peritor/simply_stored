@@ -22,7 +22,18 @@ class CouchHasManyTest < Test::Unit::TestCase
           post.save!
         }
         assert_equal 3, user.posts.size
-        user.posts
+      end
+      
+      should "set the parent object on the clients cache" do
+        User.expects(:find).never
+        user = User.create(:title => "Mr.")
+        3.times {
+          post = Post.new
+          post.user = user
+          post.save!
+        }
+        post = user.posts.first
+        assert_equal user, user.posts.first.user
       end
       
       context "limit" do

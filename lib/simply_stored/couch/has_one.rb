@@ -43,9 +43,17 @@ module SimplyStored
           end
 
           if forced_reload || instance_variable_get("@#{name}").nil?
-            instance_variable_set("@#{name}", find_one_associated(options[:class_name], self.class, :with_deleted => with_deleted, :foreign_key => options[:foreign_key]))
+            found_object = find_one_associated(options[:class_name], self.class, :with_deleted => with_deleted, :foreign_key => options[:foreign_key])
+            instance_variable_set("@#{name}", found_object)
+            self.class.set_parent_has_one_association_object(self, found_object)
           end
           instance_variable_get("@#{name}")
+        end
+      end
+      
+      def set_parent_has_one_association_object(parent, child)
+        if child.respond_to?("#{parent.class.name.to_s.singularize.downcase}=")
+          child.send("#{parent.class.name.to_s.singularize.camelize.downcase}=", parent)
         end
       end
       

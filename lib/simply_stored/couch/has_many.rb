@@ -21,11 +21,12 @@ module SimplyStored
             descending = false
           end
 
-          cached_results = cached_results = send("_get_cached_#{name}")
+          cached_results = send("_get_cached_#{name}")
           cache_key = _cache_key_for(local_options)
           if forced_reload || cached_results[cache_key].nil? 
             cached_results[cache_key] = find_associated(options[:class_name], self.class, :with_deleted => with_deleted, :limit => limit, :descending => descending, :foreign_key => options[:foreign_key])
             instance_variable_set("@#{name}", cached_results)
+            self.class.set_parent_has_many_association_object(self, cached_results[cache_key])
           end
           cached_results[cache_key]
         end
@@ -143,6 +144,14 @@ module SimplyStored
         
         define_method "_cache_key_for" do |opt|
           opt.blank? ? :all : opt.to_s
+        end
+      end
+      
+      def set_parent_has_many_association_object(parent, child_collection)
+        child_collection.each do |child|
+          if child.respond_to?("#{parent.class.name.to_s.singularize.downcase}=")
+            child.send("#{parent.class.name.to_s.singularize.camelize.downcase}=", parent)
+          end
         end
       end
       

@@ -18,6 +18,14 @@ class CouchHasOneTest < Test::Unit::TestCase
       assert_equal identity, instance.identity
     end
     
+    should "set the parent object on the clients cache" do
+      Instance.expects(:find).never
+      instance = Instance.create
+      identity = Identity.create(:instance => instance)
+      
+      assert_equal instance, instance.identity.instance      
+    end
+    
     should "verify the given options for the accessor method" do
       instance = Instance.create
       assert_raise(ArgumentError) do
