@@ -175,7 +175,7 @@ module SimplyStored
     end
     
     def find_associated(from, to, options = {})
-      foreign_key = options.delete(:foreign_key).gsub(/_id$/, '')
+      foreign_key = (options.delete(:foreign_key) || self.class.name.singularize.underscore.foreign_key ).gsub(/_id$/, '')
       view_options = {}
       view_options[:reduce] = false
       view_options[:descending] = options[:descending] if options[:descending]

@@ -163,7 +163,7 @@ module SimplyStored
             :dependent => :nullify,
             :through => nil,
             :class_name => name.to_s.singularize.camelize,
-            :foreign_key => owner_clazz.name.singularize.underscore.foreign_key
+            :foreign_key => nil
           }.update(options)
           @name, @options = name, options
           

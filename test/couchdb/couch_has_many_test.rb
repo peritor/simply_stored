@@ -155,6 +155,15 @@ class CouchHasManyTest < Test::Unit::TestCase
         assert_equal [post], user.posts(:force_reload => true)
       end
       
+      should "use the correct view when handling inheritance" do
+        problem = Problem.create
+        big_problem = BigProblem.create
+        issue = Issue.create(:name => 'Thing', :problem => problem)
+        assert_equal 1, problem.issues.size
+        issue.update_attributes(:problem_id => nil, :big_problem_id => big_problem.id)
+        assert_equal 1, big_problem.issues.size
+      end
+      
       context "when adding items" do
         should "add the item to the internal cache" do
           daddy = User.new(:title => "Mr.")

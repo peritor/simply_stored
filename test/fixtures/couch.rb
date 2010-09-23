@@ -208,3 +208,24 @@ class Servant
   
   belongs_to :master
 end
+
+class Issue
+  include SimplyStored::Couch
+  
+  belongs_to :problem
+  belongs_to :big_problem
+  
+  property :name
+end
+
+class Problem
+  include SimplyStored::Couch
+  
+  has_many :issues
+  has_one :issue
+end
+
+class BigProblem < Problem
+
+end
+

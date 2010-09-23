@@ -26,6 +26,15 @@ class CouchHasOneTest < Test::Unit::TestCase
       assert_equal instance, instance.identity.instance      
     end
     
+    should "use the correct view when handling inheritance" do
+      problem = Problem.create
+      big_problem = BigProblem.create
+      issue = Issue.create(:name => 'Thing', :problem => problem)
+      assert_equal issue, problem.issue
+      issue.update_attributes(:problem_id => nil, :big_problem_id => big_problem.id)
+      assert_equal issue, big_problem.issue
+    end
+    
     should "verify the given options for the accessor method" do
       instance = Instance.create
       assert_raise(ArgumentError) do
