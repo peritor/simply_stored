@@ -1,6 +1,10 @@
 require 'validatable'
 require 'couch_potato'
+
 require 'active_support'
+unless {}.respond_to?(:assert_valid_keys)
+  require 'active_support/core_ext'
+end
 
 require File.expand_path(File.dirname(__FILE__) + '/../simply_stored')
 require 'simply_stored/couch/validations'
