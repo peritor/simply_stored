@@ -12,6 +12,16 @@ class CouchBelongsToTest < Test::Unit::TestCase
       should "generate a view for the association" do
         assert Post.respond_to?(:association_post_belongs_to_user)
       end
+
+      should "raise an error if another property with the same name already exists" do
+        assert_raise(RuntimeError) do
+          class ::DoubleBelongsToUser
+            include SimplyStored::Couch
+            property :user
+            belongs_to :user
+          end
+        end
+      end
       
       should "add the foreign key id to the referencing object" do
         user = User.create(:title => "Mr.")

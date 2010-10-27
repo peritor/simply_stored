@@ -11,6 +11,16 @@ class CouchHasOneTest < Test::Unit::TestCase
     should "add a getter method" do
       assert Instance.new.respond_to?(:identity)
     end
+
+    should "raise an error if another property with the same name already exists" do
+      assert_raise(RuntimeError) do
+        class ::DoubleHasOneUser
+          include SimplyStored::Couch
+          property :user
+          has_one :user
+        end
+      end
+    end
     
     should "fetch the object when invoking the getter" do
       instance = Instance.create

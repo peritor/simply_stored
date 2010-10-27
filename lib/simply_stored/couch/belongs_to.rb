@@ -2,8 +2,11 @@
 module SimplyStored
   module Couch
     module BelongsTo
-      
+      include SimplyStored::Couch::Properties
+
       def belongs_to(name, options = {})
+        check_existing_properties(name, SimplyStored::Couch::BelongsTo::Property)
+
         map_definition_without_deleted = <<-eos
           function(doc) { 
             if (doc['ruby_class'] == '#{self.to_s}' && doc['#{name.to_s}_id'] != null) {

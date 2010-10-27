@@ -2,6 +2,7 @@ module SimplyStored
   module Couch
     module HasOne
       def has_one(name, options = {})
+        check_existing_properties(name, SimplyStored::Couch::HasOne::Property)
         properties << SimplyStored::Couch::HasOne::Property.new(self, name, options)
       end
       

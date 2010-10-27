@@ -13,6 +13,16 @@ class CouchHasManyTest < Test::Unit::TestCase
         user = User.new
         assert user.respond_to?(:posts)
       end
+
+       should "raise an error if another property with the same name already exists" do
+        assert_raise(RuntimeError) do
+          class ::DoubleHasManyUser
+            include SimplyStored::Couch
+            property :other_users
+            has_many :other_users
+          end
+        end
+      end
       
       should "fetch the associated objects" do
         user = User.create(:title => "Mr.")
