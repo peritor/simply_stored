@@ -1,11 +1,11 @@
-Convenience layer for CouchDB and SimpleDB. Requires CouchPotato and RightAWS library respectively.
+Convenience layer for CouchDB on top of CouchPotato.
 
-SimplyStored allows you to persist your objects to CouchDB (or SimpleDB) using an ActiveRecord-like syntax.
+SimplyStored allows you to persist your objects to CouchDB using an ActiveRecord-like syntax.
 
 In contrast to [CouchPotato](http://github.com/langalex/couch_potato) (on top of it is build) 
 it supports associations and other syntactic sugar that makes ActiveRecord so appealing. 
 
-Both backends have also support for S3 attachments.
+SimplyStored has also support for S3 attachments.
 
 See also [RockingChair](http://github.com/jweiss/rocking_chair) on how to speed-up your unit tests 
 by using an in-memory CouchDB backend.
@@ -20,25 +20,17 @@ Installation
 Usage
 =============
 
-Require the SimplyStored and decide with backend you want (CouchDB or SimpleDB).
+Require SimplyStored:
 
-    require 'simply_stored/couch'
+    require 'simply_stored'
     CouchPotato::Config.database_name = "http://example.com:5984/name_of_the_db"
-    
-or
-
-    require 'simply_stored/simpledb'
-    SimplyStored::Simple.aws_access_key = 'foo'
-    SimplyStored::Simple.aws_secret_access_key = 'bar'
-    RightAws::ActiveSdb.establish_connection(SimplyStored::Simple.aws_access_key, SimplyStored::Simple.aws_secret_access_key, :protocol => 'https')
-    
+        
 From now on you can define classes that use SimplyStored.
 
-CouchDB - Intro
+Intro
 =============
 
-The CouchDB backend is better supported and has more features. It auto-generates views for you and handles 
-all the serialization and de-serialization stuff.
+SimplyStored auto-generates views for you and handles all the serialization and de-serialization stuff.
 
     class User
       include SimplyStored::Couch
@@ -85,7 +77,7 @@ all the serialization and de-serialization stuff.
     # => []
 
     
-CouchDB - Associations
+Associations
 =============
     
 The supported associations are: belongs_to, has_one, has_many, and has_many :through
@@ -137,7 +129,8 @@ The supported associations are: belongs_to, has_one, has_many, and has_many :thr
     # => 2
     
     
-CouchDB - Custom Associations
+Custom Associations
+=============
 
     class Document
       include SimplyStored::Couch
@@ -150,7 +143,7 @@ CouchDB - Custom Associations
     d.creator = User.first
         
 
-CouchDB - Validations
+Validations
 =============
 
 Further, you can have validations (using the validatable gem)
@@ -181,10 +174,11 @@ Further, you can have validations (using the validatable gem)
     # => raises CouchPotato::Database::ValidationsFailedError: #<CouchPotato::Database::ValidationsFailedError:0x102571130>
     
 
-CouchDB - S3 Attachments
+S3 Attachments
 =============
 
-Both the CouchDB backend and the SimpleDB backend have support for S3 attachments:
+SimplyStored supports storing large attachments in Amazon S3. 
+It uses RightAWS for the interaction with the EC2 API:
 
     class Log
       include SimplyStored::Couch
@@ -205,10 +199,10 @@ Both the CouchDB backend and the SimpleDB backend have support for S3 attachment
     log.data_size
     # => 11238132
     
-This will create an item on S3 in the specified bucket. The item will use the ID of the log object as the key and the body will be the data attribute. This way you can store big files outside of CouchDB or SimpleDB.    
+This will create an item on S3 in the specified bucket. The item will use the ID of the log object as the key and the body will be the data attribute. This way you can store big files outside of CouchDB.    
     
 
-CouchDB - Soft delete
+Soft delete
 =============
     
 SimplyStored also has support for "soft deleting" - much like acts_as_paranoid. Items will then not be deleted but only marked as deleted. This way you can recover them later.
