@@ -52,6 +52,11 @@ class FinderTest < Test::Unit::TestCase
         end
       end
       
+      should 'find the last as a reverse first' do
+        User.expects(:find).with(:first, :order => :desc)
+        User.last
+      end
+      
       should 'return nil when no user found' do
         assert_nil User.first
       end

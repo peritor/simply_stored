@@ -1,6 +1,12 @@
 Changelog
 =============
 
+- Add support for .last - which is the same as first by reverse order
+
+    User.last # => User.find(:first, :order => :desc)
+
+- Drop support for SimpleDB
+
 0.3.8
 
 - Fix loading of has_many/has_one associations for inherited relations.

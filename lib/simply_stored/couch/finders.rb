@@ -40,7 +40,11 @@ module SimplyStored
       def first(*args)
         find(:first, *args)
       end
-      
+
+      def last(*args)
+        find(:first, :order => :desc, *args)
+      end
+
       def count(options = {})
         options.assert_valid_keys(:with_deleted)
         with_deleted = options[:with_deleted]
