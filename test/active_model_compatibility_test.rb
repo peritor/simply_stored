@@ -9,7 +9,7 @@ begin
     validates_presence_of :name
   end
 
-  class CouchActiveModelCompatibilityTest < Test::Unit::TestCase
+  class ActiveModelCompatibilityTest < Test::Unit::TestCase
     def setup
       @model = CouchModel.new
     end

@@ -1,7 +1,7 @@
 require File.dirname(__FILE__) + '/test_helper'
 require File.expand_path(File.dirname(__FILE__) + '/fixtures/couch')
 
-class CouchBelongsToTest < Test::Unit::TestCase
+class BelongsToTest < Test::Unit::TestCase
   context "with associations" do
     setup do
       CouchPotato::Config.database_name = 'simply_stored_test'

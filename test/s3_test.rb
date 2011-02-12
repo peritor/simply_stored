@@ -1,7 +1,7 @@
 require File.dirname(__FILE__) + '/test_helper'
 require File.expand_path(File.dirname(__FILE__) + '/fixtures/couch')
 
-class CouchS3Test < Test::Unit::TestCase
+class S3Test < Test::Unit::TestCase
   context "with s3 interaction" do
     setup do
       CouchPotato::Config.database_name = 'simply_stored_test'

@@ -8,7 +8,7 @@ class CustomViewUser
   view :by_tags, :type => SimplyStored::Couch::Views::ArrayPropertyViewSpec, :key => :tags
 end
 
-class CustomViewsTest < Test::Unit::TestCase
+class ViewsTest < Test::Unit::TestCase
   
   context "Custom couch views" do
     setup do

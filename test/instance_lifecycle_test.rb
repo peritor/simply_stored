@@ -1,7 +1,7 @@
 require File.dirname(__FILE__) + '/test_helper'
 require File.expand_path(File.dirname(__FILE__) + '/fixtures/couch')
 
-class CouchTest < Test::Unit::TestCase
+class InstanceLifecycleTest < Test::Unit::TestCase
   context "A simply stored couch instance" do
     setup do
       CouchPotato::Config.database_name = 'simply_stored_test'
