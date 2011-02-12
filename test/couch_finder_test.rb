@@ -1,5 +1,5 @@
-require File.expand_path(File.dirname(__FILE__) + '/../test_helper')
-require File.expand_path(File.dirname(__FILE__) + '/../fixtures/couch')
+require File.dirname(__FILE__) + '/test_helper'
+require File.expand_path(File.dirname(__FILE__) + '/fixtures/couch')
 
 class CouchFinderTest < Test::Unit::TestCase
   context "when finding instances" do
