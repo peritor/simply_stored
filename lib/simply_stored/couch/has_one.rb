@@ -34,14 +34,7 @@ module SimplyStored
       def define_has_one_getter(name, options)
         define_method(name) do |*args|
           local_options = args.first && args.first.is_a?(Hash) && args.first
-          if local_options
-            local_options.assert_valid_keys(:force_reload, :with_deleted)
-            forced_reload = local_options[:force_reload]
-            with_deleted = local_options[:with_deleted]
-          else
-            forced_reload = false
-            with_deleted = false
-          end
+          forced_reload, with_deleted, limit, descending = extract_association_options(local_options)
 
           if forced_reload || instance_variable_get("@#{name}").nil?
             found_object = find_one_associated(options[:class_name], self.class, :with_deleted => with_deleted, :foreign_key => options[:foreign_key])

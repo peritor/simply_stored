@@ -9,18 +9,7 @@ module SimplyStored
       def define_has_many_getter(name, options)
         define_method(name) do |*args|
           local_options = args.first && args.first.is_a?(Hash) && args.first
-          if local_options
-            local_options.assert_valid_keys(:force_reload, :with_deleted, :limit, :order)
-            forced_reload = local_options.delete(:force_reload)
-            with_deleted = local_options[:with_deleted]
-            limit = local_options[:limit]
-            descending = (local_options[:order] == :desc) ? true : false
-          else
-            forced_reload = false
-            with_deleted = false
-            limit = nil
-            descending = false
-          end
+          forced_reload, with_deleted, limit, descending = extract_association_options(local_options)
 
           cached_results = send("_get_cached_#{name}")
           cache_key = _cache_key_for(local_options)

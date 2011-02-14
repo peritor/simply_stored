@@ -137,9 +137,25 @@ module SimplyStored
       def _define_soft_delete_views 
         view :all_documents_without_deleted, :key => soft_delete_attribute
       end
-      
+
     end
-    
+
+    def extract_association_options(local_options = nil)
+      forced_reload = false
+      with_deleted = false
+      limit = nil
+      descending = false
+      
+      if local_options
+        local_options.assert_valid_keys(:force_reload, :with_deleted, :limit, :order)
+        forced_reload = local_options.delete(:force_reload)
+        with_deleted = local_options[:with_deleted]
+        limit = local_options[:limit]
+        descending = (local_options[:order] == :desc) ? true : false
+      end
+      return [forced_reload, with_deleted, limit, descending]
+    end
+
     def self.delete_all_design_documents(database)
       db = CouchRest.database(database)
       db.info # ensure DB exists
