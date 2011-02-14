@@ -13,6 +13,7 @@ require 'simply_stored/couch/finders'
 require 'simply_stored/couch/find_by'
 require 'simply_stored/couch/belongs_to'
 require 'simply_stored/couch/has_many'
+require 'simply_stored/couch/has_and_belongs_to_many'
 require 'simply_stored/couch/has_one'
 require 'simply_stored/couch/ext/couch_potato'
 require 'simply_stored/couch/views'
@@ -41,6 +42,7 @@ module SimplyStored
       include SimplyStored::Couch::Properties
       include SimplyStored::Couch::BelongsTo
       include SimplyStored::Couch::HasMany
+      include SimplyStored::Couch::HasAndBelongsToMany
       include SimplyStored::Couch::HasOne
       include SimplyStored::Couch::Finders
       include SimplyStored::Couch::FindBy

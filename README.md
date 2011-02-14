@@ -80,7 +80,7 @@ SimplyStored auto-generates views for you and handles all the serialization and 
 Associations
 =============
     
-The supported associations are: belongs_to, has_one, has_many, and has_many :through
+The supported associations are: belongs_to, has_one, has_many, has_many :through, and has_and_belongs_to_many:
     
     class Post
       include SimplyStored::Couch
@@ -128,6 +128,33 @@ The supported associations are: belongs_to, has_one, has_many, and has_many :thr
     post.user_count
     # => 2
     
+  n:m relations where the IDs are stored on one part as an array:
+  
+    class Server
+      include SimplyStored::Couch
+
+      property :hostname
+
+      has_and_belongs_to_many :networks, :storing_keys => true
+    end
+
+    class Network
+      include SimplyStored::Couch
+
+      property :klass
+
+      has_and_belongs_to_many :servers, :storing_keys => false
+    end 
+    
+    network = Network.create(:klass => "A")
+    server = Server.new(:hostname => 'www.example.com')
+    network.add_server(server)
+    server.network_ids # => [network.id]
+    network.servers # => [server]
+    server.networks # => [network]
+    
+  The array property holding the IDs of the other item will be used to constuct two view to lookup
+  the other part. Soft deleting is only supported on the class holding the IDs.  
     
 Custom Associations
 =============

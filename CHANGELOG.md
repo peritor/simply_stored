@@ -1,6 +1,36 @@
 Changelog
 =============
 
+- Add support for has_and_belongs_to_many relations:
+
+  n:m relations where the IDs are stored on one part as an array:
+  
+    class Server
+      include SimplyStored::Couch
+
+      property :hostname
+
+      has_and_belongs_to_many :networks, :storing_keys => true
+    end
+
+    class Network
+      include SimplyStored::Couch
+
+      property :klass
+
+      has_and_belongs_to_many :servers, :storing_keys => false
+    end 
+    
+    network = Network.create(:klass => "A")
+    server = Server.new(:hostname => 'www.example.com')
+    network.add_server(server)
+    server.network_ids # => [network.id]
+    network.servers # => [server]
+    server.networks # => [network]
+    
+  The array property holding the IDs of the other item will be used to constuct two view to lookup
+  the other part. Soft deleting is only supported on the class holding the IDs.
+
 - Add support for .last - which is the same as first by reverse order
 
     User.last # => User.find(:first, :order => :desc)

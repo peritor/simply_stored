@@ -144,21 +144,25 @@ module SimplyStored
     def check_and_destroy_dependents
       self.class.properties.each do |property|
         if property.respond_to?(:association?) and property.association?
-          next unless property.options[:dependent]
-          next if property.options[:through]
-          dependents = send(property.name, :force_reload => true)
-          dependents = [dependents] unless dependents.is_a?(Array)
-          dependents.reject{|d| d.nil?}.each do |dependent|
-            case property.options[:dependent]
-            when :destroy
-              dependent.destroy
-            when :ignore
-              # skip
-            else 
-              # nullify
-              unless dependent.class.soft_deleting_enabled?
-                dependent.send("#{self.class.foreign_property}=", nil)
-                dependent.save(false)
+          if property.is_a?(SimplyStored::Couch::HasAndBelongsToMany::Property)
+            has_and_belongs_to_many_clean_up_after_destroy(property)
+          else
+            next unless property.options[:dependent]
+            next if property.options[:through]
+            dependents = send(property.name, :force_reload => true)
+            dependents = [dependents] unless dependents.is_a?(Array)
+            dependents.reject{|d| d.nil?}.each do |dependent|
+              case property.options[:dependent]
+              when :destroy
+                dependent.destroy
+              when :ignore
+                # skip
+              else 
+                # nullify
+                unless dependent.class.soft_deleting_enabled?
+                  dependent.send("#{self.class.foreign_property}=", nil)
+                  dependent.save(false)
+                end
               end
             end
           end
@@ -215,6 +219,47 @@ module SimplyStored
       end
     end
     
+    def find_associated_via_join_view(from, to, options = {})
+      foreign_key = options.delete(:foreign_key).gsub(/_ids$/, '').pluralize
+      view_options = {}
+      view_options[:reduce] = false
+      view_options[:descending] = options[:descending] if options[:descending]
+      if view_options[:descending]
+        view_options[:startkey] = ["#{id}\u9999"]
+        view_options[:endkey] = [id]
+      else
+        view_options[:startkey] = [id]
+        view_options[:endkey] = ["#{id}\u9999"]
+      end
+      view_options[:limit] = options[:limit] if options[:limit]
+      if options[:with_deleted]
+        CouchPotato.database.view(
+          self.class.get_class_from_name(from).send(
+            "association_#{from.to_s.singularize.underscore}_has_and_belongs_to_many_#{to.to_s.pluralize.underscore}_with_deleted", view_options))
+      else
+        CouchPotato.database.view(
+          self.class.get_class_from_name(from).send(
+            "association_#{from.to_s.singularize.underscore}_has_and_belongs_to_many_#{to.to_s.pluralize.underscore}", view_options))
+      end
+    end
+    
+    def count_associated_via_join_view(from, to, options = {})
+      view_options = {}
+      view_options[:reduce] = true
+      view_options[:include_docs] = false
+      view_options[:startkey] = [id]
+      view_options[:endkey] = ["#{id}\u9999"]
+      if options[:with_deleted]
+        CouchPotato.database.view(
+          self.class.get_class_from_name(from).send(
+            "association_#{from.to_s.singularize.underscore}_has_and_belongs_to_many_#{to.to_s.pluralize.underscore}_with_deleted", view_options))
+      else
+        CouchPotato.database.view(
+          self.class.get_class_from_name(from).send(
+            "association_#{from.to_s.singularize.underscore}_has_and_belongs_to_many_#{to.to_s.pluralize.underscore}", view_options))
+      end
+    end
+
     def _mark_as_deleted
       run_callbacks(:before_destroy)
       send("#{self.class.soft_delete_attribute}=", Time.now)

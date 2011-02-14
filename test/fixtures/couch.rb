@@ -33,6 +33,7 @@ class Comment
   include SimplyStored::Couch
   
   belongs_to :user
+  belongs_to :network
 end
 
 class Category
@@ -229,3 +230,57 @@ class BigProblem < Problem
 
 end
 
+class Server
+  include SimplyStored::Couch
+
+  property :hostname
+
+  has_and_belongs_to_many :networks, :storing_keys => true
+  has_and_belongs_to_many :subnets, :storing_keys => true
+  has_and_belongs_to_many :ips, :storing_keys => false
+end
+
+class Network
+  include SimplyStored::Couch
+
+  property :klass
+
+  has_and_belongs_to_many :servers, :storing_keys => false
+  has_and_belongs_to_many :routers, :storing_keys => false
+end
+
+class Subnet < Network
+  has_and_belongs_to_many :servers, :storing_keys => false
+end
+
+class Ip
+  include SimplyStored::Couch
+
+  has_and_belongs_to_many :servers, :storing_keys => true
+end
+
+class Router
+  include SimplyStored::Couch
+  enable_soft_delete
+
+  property :hostname
+
+  has_and_belongs_to_many :networks, :storing_keys => true
+end
+
+class Book
+  include SimplyStored::Couch
+
+  property :title
+
+  has_and_belongs_to_many :authors, :storing_keys => true
+end
+
+class Author
+  include SimplyStored::Couch
+  enable_soft_delete
+
+  property :name
+
+  has_and_belongs_to_many :books, :storing_keys => false
+end
