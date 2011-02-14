@@ -121,22 +121,6 @@ module SimplyStored
         end
       end
       
-      def define_cache_accessors(name, options)
-        define_method "_get_cached_#{name}" do
-          instance_variable_get("@#{name}") || {}
-        end
-        
-        define_method "_set_cached_#{name}" do |value, cache_key|
-          cached = send("_get_cached_#{name}")
-          cached[cache_key] = value
-          instance_variable_set("@#{name}", cached)
-        end
-        
-        define_method "_cache_key_for" do |opt|
-          opt.blank? ? :all : opt.to_s
-        end
-      end
-      
       def set_parent_has_many_association_object(parent, child_collection)
         child_collection.each do |child|
           if child.respond_to?("#{parent.class.name.to_s.singularize.downcase}=")
@@ -160,13 +144,13 @@ module SimplyStored
           
           if options[:through]
             owner_clazz.class_eval do
-              define_cache_accessors(name, options)
+              _define_cache_accessors(name, options)
               define_has_many_through_getter(name, options, options[:through])
               define_has_many_count(name, options, options[:through])
             end
           else
             owner_clazz.class_eval do
-              define_cache_accessors(name, options)
+              _define_cache_accessors(name, options)
               define_has_many_getter(name, options)
               define_has_many_setter_add(name, options)
               define_has_many_setter_remove(name, options)

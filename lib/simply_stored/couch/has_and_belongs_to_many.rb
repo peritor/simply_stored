@@ -148,22 +148,6 @@ module SimplyStored
           instance_variable_get("@#{method_name}")
         end
       end
-
-      def define_cache_accessors(name, options)
-        define_method "_get_cached_#{name}" do
-          instance_variable_get("@#{name}") || {}
-        end
-
-        define_method "_set_cached_#{name}" do |value, cache_key|
-          cached = send("_get_cached_#{name}")
-          cached[cache_key] = value
-          instance_variable_set("@#{name}", cached)
-        end
-
-        define_method "_cache_key_for" do |opt|
-          opt.blank? ? :all : opt.to_s
-        end
-      end
       
       def define_has_and_belongs_to_many_after_destroy_cleanup(name, options)
         if options[:class_storing_keys] == self.name
@@ -200,7 +184,7 @@ module SimplyStored
           options.assert_valid_keys(:class_name, :foreign_key, :storing_keys, :class_storing_keys)
 
           owner_clazz.class_eval do
-            define_cache_accessors(name, options)
+            _define_cache_accessors(name, options)
             define_has_and_belongs_to_many_property(options[:foreign_key]) if options[:storing_keys]
             define_has_and_belongs_to_many_views(name, options)
             define_has_and_belongs_to_many_getter(name, options)

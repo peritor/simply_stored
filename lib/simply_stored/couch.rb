@@ -138,6 +138,21 @@ module SimplyStored
         view :all_documents_without_deleted, :key => soft_delete_attribute
       end
 
+      def _define_cache_accessors(name, options)
+        define_method "_get_cached_#{name}" do
+          instance_variable_get("@#{name}") || {}
+        end
+
+        define_method "_set_cached_#{name}" do |value, cache_key|
+          cached = send("_get_cached_#{name}")
+          cached[cache_key] = value
+          instance_variable_set("@#{name}", cached)
+        end
+
+        define_method "_cache_key_for" do |opt|
+          opt.blank? ? :all : opt.to_s
+        end
+      end
     end
 
     def extract_association_options(local_options = nil)
