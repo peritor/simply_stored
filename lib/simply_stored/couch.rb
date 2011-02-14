@@ -8,6 +8,7 @@ end
 
 require File.expand_path(File.dirname(__FILE__) + '/../simply_stored')
 require 'simply_stored/couch/validations'
+require 'simply_stored/couch/association_property'
 require 'simply_stored/couch/properties'
 require 'simply_stored/couch/finders'
 require 'simply_stored/couch/find_by'

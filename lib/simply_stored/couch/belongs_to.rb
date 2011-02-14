@@ -20,11 +20,6 @@ module SimplyStored
         eos
         
         reduce_definition = "_sum"
-        # reduce_definition = <<-eos
-        #   function(key, values) {
-        #     return sum(values);
-        #   }
-        # eos
          
         view "association_#{self.name.underscore}_belongs_to_#{name}",
           :map => map_definition_without_deleted,
