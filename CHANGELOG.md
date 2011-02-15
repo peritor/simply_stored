@@ -1,6 +1,8 @@
 Changelog
 =============
 
+0.5.0
+
 - Add support for has_and_belongs_to_many relations:
 
   n:m relations where the IDs are stored on one part as an array:

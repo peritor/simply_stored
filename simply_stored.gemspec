@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{simply_stored}
-  s.version = "0.4.0"
+  s.version = "0.5.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Mathias Meyer, Jonathan Weiss"]
-  s.date = %q{2011-02-12}
+  s.date = %q{2011-02-15}
   s.description = %q{Convenience layer for CouchDB and SimpleDB. Requires CouchPotato and RightAWS library respectively.}
   s.email = %q{info@peritor.com}
   s.extra_rdoc_files = [
@@ -23,10 +23,12 @@ Gem::Specification.new do |s|
      "lib/simply_stored.rb",
      "lib/simply_stored/class_methods_base.rb",
      "lib/simply_stored/couch.rb",
+     "lib/simply_stored/couch/association_property.rb",
      "lib/simply_stored/couch/belongs_to.rb",
      "lib/simply_stored/couch/ext/couch_potato.rb",
      "lib/simply_stored/couch/find_by.rb",
      "lib/simply_stored/couch/finders.rb",
+     "lib/simply_stored/couch/has_and_belongs_to_many.rb",
      "lib/simply_stored/couch/has_many.rb",
      "lib/simply_stored/couch/has_one.rb",
      "lib/simply_stored/couch/properties.rb",
@@ -48,6 +50,7 @@ Gem::Specification.new do |s|
      "test/conflict_handling_test.rb",
      "test/finder_test.rb",
      "test/fixtures/couch.rb",
+     "test/has_and_belongs_to_many_test.rb",
      "test/has_many_test.rb",
      "test/has_one_test.rb",
      "test/instance_lifecycle_test.rb",
