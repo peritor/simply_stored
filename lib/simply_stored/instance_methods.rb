@@ -170,6 +170,20 @@ module SimplyStored
       end
     end
     
+    def _default_view_options(options = {})
+      view_options = {:include_docs => true, :reduce => false}
+      view_options[:descending] = options[:descending] if options[:descending]
+      if view_options[:descending]
+        view_options[:startkey] = ["#{id}\u9999"]
+        view_options[:endkey] = [id]
+      else
+        view_options[:startkey] = [id]
+        view_options[:endkey] = ["#{id}\u9999"]
+      end
+      view_options[:limit] = options[:limit] if options[:limit]
+      view_options
+    end
+
     def find_one_associated(from, to, options = {})
       options = {
         :limit => 1, 
@@ -180,17 +194,8 @@ module SimplyStored
     
     def find_associated(from, to, options = {})
       foreign_key = (options.delete(:foreign_key) || self.class.name.singularize.underscore.foreign_key ).gsub(/_id$/, '')
-      view_options = {}
-      view_options[:reduce] = false
-      view_options[:descending] = options[:descending] if options[:descending]
-      if view_options[:descending]
-        view_options[:startkey] = ["#{id}\u9999"]
-        view_options[:endkey] = [id]
-      else
-        view_options[:startkey] = [id]
-        view_options[:endkey] = ["#{id}\u9999"]
-      end
-      view_options[:limit] = options[:limit] if options[:limit]
+      view_options = _default_view_options(options)
+
       if options[:with_deleted]
         CouchPotato.database.view(
           self.class.get_class_from_name(from).send(
@@ -203,11 +208,10 @@ module SimplyStored
     end
     
     def count_associated(from, to, options = {})
-      view_options = {}
+      view_options = _default_view_options(options)
       view_options[:reduce] = true
       view_options[:include_docs] = false
-      view_options[:startkey] = [id]
-      view_options[:endkey] = ["#{id}\u9999"]
+
       if options[:with_deleted]
         CouchPotato.database.view(
           self.class.get_class_from_name(from).send(
@@ -221,17 +225,8 @@ module SimplyStored
     
     def find_associated_via_join_view(from, to, options = {})
       foreign_key = options.delete(:foreign_key).gsub(/_ids$/, '').pluralize
-      view_options = {}
-      view_options[:reduce] = false
-      view_options[:descending] = options[:descending] if options[:descending]
-      if view_options[:descending]
-        view_options[:startkey] = ["#{id}\u9999"]
-        view_options[:endkey] = [id]
-      else
-        view_options[:startkey] = [id]
-        view_options[:endkey] = ["#{id}\u9999"]
-      end
-      view_options[:limit] = options[:limit] if options[:limit]
+      view_options = _default_view_options(options)
+
       if options[:with_deleted]
         CouchPotato.database.view(
           self.class.get_class_from_name(from).send(
@@ -244,11 +239,10 @@ module SimplyStored
     end
     
     def count_associated_via_join_view(from, to, options = {})
-      view_options = {}
+      view_options = _default_view_options(options)
       view_options[:reduce] = true
       view_options[:include_docs] = false
-      view_options[:startkey] = [id]
-      view_options[:endkey] = ["#{id}\u9999"]
+
       if options[:with_deleted]
         CouchPotato.database.view(
           self.class.get_class_from_name(from).send(
