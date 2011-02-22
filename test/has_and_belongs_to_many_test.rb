@@ -143,12 +143,18 @@ class HasAndBelongsToManyTest < Test::Unit::TestCase
       context "order" do
         setup do
           @network = Network.create(:klass => "A")
+          @network.created_at = Time.local(2000)
+          @network.save!
           @network_b = Network.create(:klass => "B")
-          3.times {
+          @network_b.created_at = Time.local(2002)
+          @network_b.save!
+          3.times do |i|
             server = Server.new
             server.add_network(@network)
             server.add_network(@network_b)
-          }
+            server.created_at = Time.local(2000 + i)
+            server.save!
+          end
         end
 
         should "support different order" do
@@ -163,7 +169,8 @@ class HasAndBelongsToManyTest < Test::Unit::TestCase
 
         should "reverse the order if :desc" do
           assert_equal @network.servers(:order => :asc).map(&:id).reverse, @network.servers(:order => :desc).map(&:id)
-          assert_equal @network.servers.first.networks(:order => :asc).map(&:id).reverse, @network.servers.first.networks(:order => :desc).map(&:id)
+          server = @network.servers.first
+          assert_equal server.networks(:order => :asc).map(&:id).reverse, server.networks(:order => :desc).map(&:id)
         end
 
         should "work with the limit option" do
@@ -171,7 +178,7 @@ class HasAndBelongsToManyTest < Test::Unit::TestCase
           server.add_network(@network)
           server.add_network(@network_b)
           assert_not_equal @network.servers(:order => :asc, :limit => 3).map(&:id).reverse, @network.servers(:order => :desc, :limit => 3).map(&:id)
-          assert_not_equal @network.servers.first.networks(:order => :asc, :limit => 1).map(&:id).reverse, @network.servers.first.networks(:order => :desc, :limit => 1).map(&:id)
+          assert_not_equal server.networks(:order => :asc, :limit => 1).map(&:id).reverse, server.networks(:order => :desc, :limit => 1).map(&:id)
         end
       end
 
