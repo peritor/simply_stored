@@ -24,10 +24,10 @@ begin
   require 'jeweler'
   Jeweler::Tasks.new do |s|
     s.name = "simply_stored"
-    s.summary = %Q{Convenience layer for CouchDB and SimpleDB}
+    s.summary = %Q{Convenience layer for CouchDB}
     s.email = "info@peritor.com"
     s.homepage = "http://github.com/peritor/simply_stored"
-    s.description = "Convenience layer for CouchDB and SimpleDB. Requires CouchPotato and RightAWS library respectively."
+    s.description = "Convenience layer for CouchDB on top of CouchPotato."
     s.authors = ["Mathias Meyer, Jonathan Weiss"]
     s.files = FileList["[A-Z]*.*", "{lib}/**/*"]
     s.add_dependency('rest-client', '>= 1.4.2')

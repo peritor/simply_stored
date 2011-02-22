@@ -9,8 +9,8 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Mathias Meyer, Jonathan Weiss"]
-  s.date = %q{2011-02-15}
-  s.description = %q{Convenience layer for CouchDB and SimpleDB. Requires CouchPotato and RightAWS library respectively.}
+  s.date = %q{2011-02-22}
+  s.description = %q{Convenience layer for CouchDB on top of CouchPotato.}
   s.email = %q{info@peritor.com}
   s.extra_rdoc_files = [
     "LICENSE.txt",
@@ -43,7 +43,7 @@ Gem::Specification.new do |s|
   s.rdoc_options = ["--charset=UTF-8"]
   s.require_paths = ["lib"]
   s.rubygems_version = %q{1.3.7}
-  s.summary = %q{Convenience layer for CouchDB and SimpleDB}
+  s.summary = %q{Convenience layer for CouchDB}
   s.test_files = [
     "test/active_model_compatibility_test.rb",
      "test/belongs_to_test.rb",
