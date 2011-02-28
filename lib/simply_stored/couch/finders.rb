@@ -42,7 +42,7 @@ module SimplyStored
       end
 
       def last(*args)
-        find(:first, :order => :desc, *args)
+        find(:first, {:order => :desc}, *args)
       end
 
       def count(options = {})
