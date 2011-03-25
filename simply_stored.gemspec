@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{simply_stored}
-  s.version = "0.5.0"
+  s.version = "0.5.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Mathias Meyer, Jonathan Weiss"]
-  s.date = %q{2011-02-22}
+  s.date = %q{2011-03-25}
   s.description = %q{Convenience layer for CouchDB on top of CouchPotato.}
   s.email = %q{info@peritor.com}
   s.extra_rdoc_files = [
@@ -18,6 +18,7 @@ Gem::Specification.new do |s|
   ]
   s.files = [
     "CHANGELOG.md",
+     "Gemfile.lock",
      "LICENSE.txt",
      "README.md",
      "lib/simply_stored.rb",
