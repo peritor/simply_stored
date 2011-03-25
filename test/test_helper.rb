@@ -1,9 +1,9 @@
 require 'rubygems'
 require 'test/unit'
+require 'bundler/setup'
+require 'active_support/testing/assertions'
 require 'shoulda'
 require 'mocha'
-require 'active_support'
-require 'active_support/testing/assertions'
 $:.unshift(File.expand_path(File.dirname(__FILE__) + "/../lib"))
 puts File.expand_path(File.dirname(__FILE__) + "/lib")
 require 'simply_stored'
