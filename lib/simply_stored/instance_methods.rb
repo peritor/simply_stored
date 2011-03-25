@@ -159,7 +159,7 @@ module SimplyStored
                 # skip
               else 
                 # nullify
-                unless dependent.class.soft_deleting_enabled?
+                unless dependent.class.soft_deleting_enabled? && dependent.deleted?
                   dependent.send("#{self.class.foreign_property}=", nil)
                   dependent.save(false)
                 end

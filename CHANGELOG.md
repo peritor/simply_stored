@@ -1,6 +1,10 @@
 Changelog
 =============
 
+0.5.1
+
+- Fix nullifying soft deleted objects when they are not deleted
+
 0.5.0
 
 - Add support for has_and_belongs_to_many relations:

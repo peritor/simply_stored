@@ -171,10 +171,19 @@ class SoftDeletableTest < Test::Unit::TestCase
           assert_nil @rash.hemorrhoid_id
         end
         
-        should "not nullify dependents if they are soft-deletable" do
+        should "nullify dependents if they are soft-deletable and deleted" do
           small_rash = SmallRash.create(:hemorrhoid => @hemorrhoid)
           @hemorrhoid.reload
           @hemorrhoid.destroy
+          assert @hemorrhoid.deleted?
+          small_rash = SmallRash.find(small_rash.id)
+          assert_nil small_rash.hemorrhoid_id
+        end
+
+        should "not nullify dependents if they are soft-deletable and not deleted" do
+          small_rash = SmallRash.create(:hemorrhoid => @hemorrhoid)
+          @hemorrhoid.reload
+          assert !@hemorrhoid.deleted?
           small_rash = SmallRash.find(small_rash.id)
           assert_not_nil small_rash.hemorrhoid_id
           assert_equal @hemorrhoid.id, small_rash.hemorrhoid_id
