@@ -273,7 +273,9 @@ class SoftDeletableTest < Test::Unit::TestCase
         should "load non-deleted" do
           hemorrhoid = Hemorrhoid.create
           assert_not_nil Hemorrhoid.find(:first)
+          assert Hemorrhoid.find(:first).is_a?(Hemorrhoid), Hemorrhoid.find(:first).inspect
           assert_not_nil Hemorrhoid.find(:first, :with_deleted => false)
+          assert Hemorrhoid.find(:first, :with_deleted => false).is_a?(Hemorrhoid), Hemorrhoid.find(:first, :with_deleted => false).inspect
         end
         
         should "load deleted if asked to" do

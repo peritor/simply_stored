@@ -15,13 +15,13 @@ module SimplyStored
           if with_deleted || !soft_deleting_enabled?
             CouchPotato.database.view(all_documents(*args))
           else
-            CouchPotato.database.view(all_documents_without_deleted(options))
+            CouchPotato.database.view(all_documents_without_deleted(options.update(:include_docs => true)))
           end
         when :first
           if with_deleted || !soft_deleting_enabled?
-            CouchPotato.database.view(all_documents(:limit => 1)).first
+            CouchPotato.database.view(all_documents(:limit => 1, :include_docs => true)).first
           else
-            CouchPotato.database.view(all_documents_without_deleted(:limit => 1)).first
+            CouchPotato.database.view(all_documents_without_deleted(:limit => 1, :include_docs => true)).first
           end
         else          
           raise SimplyStored::Error, "Can't load record without an id" if what.nil?
