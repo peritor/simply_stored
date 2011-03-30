@@ -134,8 +134,8 @@ module SimplyStored
         end
       end
       
-      def _define_soft_delete_views 
-        view :all_documents_without_deleted, :key => soft_delete_attribute
+      def _define_soft_delete_views
+        view :all_documents_without_deleted, :type => SimplyStored::Couch::Views::DeletedModelViewSpec
       end
 
       def _define_cache_accessors(name, options)

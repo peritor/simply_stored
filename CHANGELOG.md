@@ -1,6 +1,10 @@
 Changelog
 =============
 
+0.5.2
+
+- Change implementation of all_documents_without_deleted view so that it can now be passed view parameters
+
 0.5.1
 
 - Fix nullifying soft deleted objects when they are not deleted
