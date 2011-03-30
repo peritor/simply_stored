@@ -1,7 +1,7 @@
 Changelog
 =============
 
-0.5.2
+0.5.3
 
 - Change implementation of all_documents_without_deleted view so that it can now be passed view parameters
 
