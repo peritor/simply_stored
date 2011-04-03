@@ -56,7 +56,6 @@ module SimplyStored
           @options.assert_valid_keys(:class_name)
 
           owner_clazz.class_eval do
-            attr_reader "#{name}_id"
             attr_accessor "#{name}_id_was"
             property "#{name}_id"
             
@@ -74,17 +73,17 @@ module SimplyStored
               klass = self.class.get_class_from_name(self.class._find_property(name).options[:class_name])
               raise ArgumentError, "expected #{klass} got #{value.class}" unless value.nil? || value.is_a?(klass)
 
+              new_foreign_id = value.nil? ? nil : value.id
+
+              send("#{name}_id_will_change!") if send("#{name}_id_was") != new_foreign_id
+              send("#{name}_id=", new_foreign_id)
               instance_variable_set("@#{name}", value)
-              if value.nil?
-                instance_variable_set("@#{name}_id", nil)
-              else
-                instance_variable_set("@#{name}_id", value.id)
-              end
             end
 
-            define_method "#{name}_id=" do |id|
+            define_method "#{name}_id=" do |new_foreign_id|
               remove_instance_variable("@#{name}") if instance_variable_defined?("@#{name}")
-              instance_variable_set("@#{name}_id", id)
+              send("#{name}_id_will_change!") if send("#{name}_id_was") != new_foreign_id
+              instance_variable_set("@#{name}_id", new_foreign_id)
             end
             
             define_method "#{name}_changed?" do

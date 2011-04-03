@@ -81,7 +81,7 @@ module SimplyStored
           elsif options[:dependent] == :ignore
             # skip
           else # nullify
-            value.send("#{self.class.foreign_key}=", nil) 
+            value.send("#{self.class.foreign_key}=", nil)
             value.save(false)
           end
           

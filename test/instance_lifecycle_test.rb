@@ -205,7 +205,7 @@ class InstanceLifecycleTest < Test::Unit::TestCase
         user2 = User.find(user.id)
         user2.update_attributes(:title => "Mrs.", :name => "Hostess Masteress")
         user.reload
-        assert !user.dirty?
+        assert !user.dirty?, user.changes.inspect
       end
       
       should "ensure that association caches for has_many are cleared" do

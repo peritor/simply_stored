@@ -30,7 +30,18 @@ class BelongsToTest < Test::Unit::TestCase
         post = Post.find(post.id)
         assert_equal user.id, post.user_id
       end
+
+      should "create a property for the foreign key attribute" do
+        assert Post.properties.any?{|p| p.is_a?(CouchPotato::Persistence::SimpleProperty) && p.name == 'user_id'}
+      end
       
+      should "notice a change to the foreign key attribute in dirty checks" do
+        user = User.create!(:title => 'Prof')
+        post = Post.create!
+        post.user = user
+        assert post.user_id_changed?
+      end
+
       should "set also the foreign key id to nil if setting the referencing object to nil" do
         user = User.create(:title => "Mr.")
         post = Post.create(:user => user)
@@ -63,7 +74,7 @@ class BelongsToTest < Test::Unit::TestCase
         post.save
         
         post = Post.find(post.id)
-        assert_equal user2, post.user
+        assert_equal user2.id, post.user.id
       end
       
       should "check the class and raise an error if not matching in belongs_to setter" do

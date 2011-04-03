@@ -29,12 +29,18 @@ module SimplyStored
     def destroy(override_soft_delete=false)
       check_and_destroy_dependents
       if self.class.soft_deleting_enabled? && !override_soft_delete
+        # soft-delete
         _mark_as_deleted
       else
-        self.skip_callbacks = true if self.class.soft_deleting_enabled? && deleted?
-        CouchPotato.database.destroy_document(self)
+        if self.class.soft_deleting_enabled? && deleted?
+          # really deleting a previously soft-deleted object - skipping callbacks
+          CouchPotato.database.destroy_document(self, false)
+        else # deleting a normal object or a soft-deletable object that was not soft-deleted before
+          CouchPotato.database.destroy_document(self, true)
+        end
         freeze
       end
+      self
     end
     alias :delete :destroy
 
@@ -65,8 +71,8 @@ module SimplyStored
         false
       end
     end
-    
-    protected
+
+  protected
     
     def retry_on_conflict(max_retries = 2, &blk)
       retry_count = 0
@@ -255,10 +261,10 @@ module SimplyStored
     end
 
     def _mark_as_deleted
-      run_callbacks(:before_destroy)
-      send("#{self.class.soft_delete_attribute}=", Time.now)
-      save(false)
-      run_callbacks(:after_destroy)
+      _run_destroy_callbacks do
+        send("#{self.class.soft_delete_attribute}=", Time.now)
+        save(false)
+      end
     end
     
   end

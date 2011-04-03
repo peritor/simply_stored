@@ -65,9 +65,15 @@ class SoftDeletableTest < Test::Unit::TestCase
         CouchPotato.database.expects(:destroy_document).never
         @hemorrhoid.destroy
       end
+
+      should "really delete with callbacks" do
+        CouchPotato.database.expects(:destroy_document).with(@hemorrhoid, true)
+        @hemorrhoid.destroy!
+      end
       
-      should "really delete if asked to" do
-        CouchPotato.database.expects(:destroy_document).with(@hemorrhoid)
+      should "really delete without callbacks if the object was soft-deleted before" do
+        CouchPotato.database.expects(:destroy_document).with(@hemorrhoid, false)
+        @hemorrhoid.destroy
         @hemorrhoid.destroy!
       end
       
@@ -110,7 +116,7 @@ class SoftDeletableTest < Test::Unit::TestCase
           end
         end
         
-        should "not fire the callbacks on the real destroy if the object is not deleted" do
+        should "fire the callbacks on the real destroy if the object is not deleted" do
           @hemorrhoid = Hemorrhoid.create
           $before = nil
           $after = nil

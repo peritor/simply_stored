@@ -19,6 +19,8 @@ require 'simply_stored/couch/has_one'
 require 'simply_stored/couch/ext/couch_potato'
 require 'simply_stored/couch/views'
 
+CouchPotato::Config.validation_framework = :validatable
+
 module SimplyStored
   module Couch
     def self.included(clazz)
@@ -30,8 +32,6 @@ module SimplyStored
       
       clazz.instance_eval do
         attr_accessor :_accessible_attributes, :_protected_attributes
-        alias :simpledb_array :simpledb_string
-        alias :simpledb_integer :simpledb_string
         
         view :all_documents, :key => :created_at
       end
@@ -84,34 +84,6 @@ module SimplyStored
         @auto_conflict_resolution_on_save = val
       end
       
-      def simpledb_string(*names)
-        names.each do |name|
-          property name
-        end
-      end
-      
-      def simpledb_timestamp(*names)
-        names.each do |name|
-          property name, :type => Time
-        end
-      end
-      
-      def require_attributes(*names)
-        names.each do |name|
-          validates_presence_of name
-        end
-      end
-
-      def require_inclusion_of(name, valid_set, options = {})
-        options.update(:in => valid_set)
-        validates_inclusion_of(name, options)
-      end
-      
-      def require_format_of(attr, valid_regex, options = {})
-        options.update(:with => valid_regex)
-        validates_format_of(attr, options)
-      end
-
       def method_missing(name, *args)
         if name.to_s =~ /^find_by/
           _define_find_by(name, *args)
