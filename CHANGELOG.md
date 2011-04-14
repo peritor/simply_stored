@@ -1,6 +1,8 @@
 Changelog
 =============
 
+0.5.4
+
 - Add Rake task to compact all views in a given database: 
   DATABASE=http://localhost:5984/my_db rake simply_stored:compact_design_documents
 
