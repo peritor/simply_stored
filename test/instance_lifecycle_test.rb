@@ -17,6 +17,15 @@ class InstanceLifecycleTest < Test::Unit::TestCase
         user.posts
         assert_equal 1, SimplyStored::Couch.delete_all_design_documents(db)
       end
+
+      should "compact all" do
+        db = "http://127.0.0.1:5984/#{CouchPotato::Config.database_name}"
+        assert_equal 0, SimplyStored::Couch.compact_all_design_documents(db)
+        user = User.create
+        Post.create(:user => user)
+        user.posts
+        assert_equal 1, SimplyStored::Couch.compact_all_design_documents(db)
+      end
     end
 
     context "when creating instances" do

@@ -182,6 +182,19 @@ module SimplyStored
       end
       design_docs.size
     end
+
+    def self.compact_all_design_documents(database)
+      db = CouchRest.database(database)
+      db.info # ensure DB exists
+      design_docs = CouchRest.get("#{database}/_all_docs?startkey=%22_design%22&endkey=%22_design0%22")['rows'].map do |row|
+        [row['id'], row['value']['rev']]
+      end
+      design_docs.each do |doc_id, rev|
+        puts "#{database}/_compact/#{doc_id.gsub("_design/",'')}"
+        CouchRest.post("#{database}/_compact/#{doc_id.gsub("_design/",'')}")
+      end
+      design_docs.size
+    end
     
   end
 end
