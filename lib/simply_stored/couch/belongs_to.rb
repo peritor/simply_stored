@@ -56,9 +56,8 @@ module SimplyStored
           @options.assert_valid_keys(:class_name)
 
           owner_clazz.class_eval do
-            attr_reader "#{name}_id"
-            attr_accessor "#{name}_id_was"
-            property "#{name}_id"
+            attr_accessor :"#{name}_id_was"
+            property :"#{name}_id"
             
             define_method name do |*args|
               local_options = args.last.is_a?(Hash) ? args.last : {}
