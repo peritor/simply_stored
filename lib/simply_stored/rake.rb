@@ -9,4 +9,15 @@ namespace :simply_stored do
       puts "please specify which database to clear: DATABASE=http://localhost:5984/simply_stored rake simply_stored:delete_design_documents"
     end
   end
+
+  desc "compact all design documents"
+  task :compact_design_documents do
+    require File.dirname(__FILE__) + "/couch"
+    if database = ENV['DATABASE']
+      compacted = SimplyStored::Couch.compact_all_design_documents(database)
+      puts "triggered compaction of #{compacted} design documents in #{database}"
+    else
+      puts "please specify which database to clear: DATABASE=http://localhost:5984/simply_stored rake simply_stored:delete_design_documents"
+    end
+  end
 end

@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{simply_stored}
-  s.version = "0.5.3"
+  s.version = "0.5.4"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Mathias Meyer, Jonathan Weiss"]
-  s.date = %q{2011-03-30}
+  s.date = %q{2011-04-14}
   s.description = %q{Convenience layer for CouchDB on top of CouchPotato.}
   s.email = %q{info@peritor.com}
   s.extra_rdoc_files = [
