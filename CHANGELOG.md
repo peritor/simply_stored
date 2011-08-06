@@ -1,6 +1,15 @@
 Changelog
 =============
 
+0.6.0
+
+- Ruby 1.9.2 compatible
+
+- compatible with CouchPotato > 0.5 where the attributes are lazy loaded
+
+- Depends on ActiveSupport/ActiveModel 3.x
+  --> Does not longer work with Rails 2.x !
+
 0.5.4
 
 - Add Rake task to compact all views in a given database: 

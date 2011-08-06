@@ -17,6 +17,47 @@ Installation
 
     gem install simply_stored
 
+
+#### Using with Rails
+
+Create a config/couchdb.yml:
+
+    default: &default
+      validation_framework: :active_model # optional
+      split_design_documents_per_view: true # optional
+
+    development:
+      <<: *default
+      database: http://localhost:5984/development_db
+    test:
+      <<: *default
+      database: http://localhost:5984/test_db
+    production:
+      <<: *default
+      database: <%= ENV['DB_NAME'] %>
+
+#### Rails 2.x
+
+In config/environment.rb:
+
+    config.gem 'simply_stored', :source => 'http://gemcutter.org'
+    config.frameworks -= [:active_record] # if you do not need ActiveRecord any more
+
+Please note that if you use Rails 2.x, you can only use SimplyStored until version 0.5.4. SimplyStored 0.6 and above require Rails 3.x.
+
+#### Rails 3.x
+
+Add to your Gemfile:
+
+    # gem 'rails' # we don't want to load activerecord so we can't require rails
+    gem 'railties'
+    gem 'actionpack'
+    gem 'actionmailer'
+    gem 'activemodel'
+    gem 'simply_stored', :require => 'simply_stored/couch'
+
+Please also see the installation info of [CouchPotato](https://github.com/langalex/couch_potato)
+
 Usage
 =============
 
