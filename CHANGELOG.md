@@ -1,6 +1,10 @@
 Changelog
 =============
 
+0.6.1
+
+- Fix warning of dynamically created views to point to the correct called
+
 0.6.0
 
 - Ruby 1.9.2 compatible
