@@ -56,8 +56,8 @@ module SimplyStored
           @options.assert_valid_keys(:class_name)
 
           owner_clazz.class_eval do
-            attr_accessor :"#{name}_id_was"
-            property :"#{name}_id"
+            attr_accessor "#{name}_id_was"
+            property "#{name}_id"
             
             define_method name do |*args|
               local_options = args.last.is_a?(Hash) ? args.last : {}
@@ -75,15 +75,14 @@ module SimplyStored
 
               new_foreign_id = value.nil? ? nil : value.id
 
-              send("#{name}_id_will_change!") if send("#{name}_id_was") != new_foreign_id
               send("#{name}_id=", new_foreign_id)
               instance_variable_set("@#{name}", value)
             end
 
             define_method "#{name}_id=" do |new_foreign_id|
+              super
+              value = instance_variable_get("@#{name}")
               remove_instance_variable("@#{name}") if instance_variable_defined?("@#{name}")
-              send("#{name}_id_will_change!") if send("#{name}_id_was") != new_foreign_id
-              instance_variable_set("@#{name}_id", new_foreign_id)
             end
             
             define_method "#{name}_changed?" do
