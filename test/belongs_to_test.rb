@@ -32,7 +32,7 @@ class BelongsToTest < Test::Unit::TestCase
       end
 
       should "create a property for the foreign key attribute" do
-        assert Post.properties.any?{|p| p.is_a?(CouchPotato::Persistence::SimpleProperty) && p.name == 'user_id'}
+        assert Post.properties.any?{|p| p.is_a?(CouchPotato::Persistence::SimpleProperty) && p.name.to_s == 'user_id'}
       end
       
       should "notice a change to the foreign key attribute in dirty checks" do

@@ -18,7 +18,6 @@ Gem::Specification.new do |s|
   ]
   s.files = [
     "CHANGELOG.md",
-     "Gemfile.lock",
      "LICENSE.txt",
      "README.md",
      "lib/simply_stored.rb",
