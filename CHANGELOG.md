@@ -1,6 +1,10 @@
 Changelog
 =============
 
+0.6.2
+
+- Decorate conflict exceptions with information about the conflict
+
 0.6.1
 
 - Fix warning of dynamically created views to point to the correct called

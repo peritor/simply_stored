@@ -92,5 +92,43 @@ class ConflictHandlingTest < Test::Unit::TestCase
         assert @copy.save
       end
     end
+
+    context "with conflict information" do
+
+      should "add information about the conflict to the exception" do
+        @original.name = "Pluto"
+        assert @original.save
+
+        @copy.name = 'Prof.'
+        begin
+          @copy.save
+        rescue RestClient::Conflict => e
+          assert_match(/conflict on attributes\: \[\:name\]/i, e.message)
+        end
+      end
+
+      should "only add the conflict information to one exception" do
+        @other_copy = User.find(@original.id)
+
+        @original.name = "Pluto"
+        @original.title = "Frau"
+        assert @original.save
+
+        @copy.name = 'Prof.'
+        begin
+          assert @copy.save
+        rescue RestClient::Conflict => e
+          assert_match(/conflict on attributes\: \[\:name\]/i, e.message)
+        end
+
+        @other_copy.title = 'Prof.'
+        begin
+          @other_copy.save
+        rescue RestClient::Conflict => e
+          assert_match(/conflict on attributes\: \[\:title\]/i, e.message)
+        end
+      end
+    end
+
   end
 end
