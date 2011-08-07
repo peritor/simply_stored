@@ -1,6 +1,10 @@
 Changelog
 =============
 
+0.6.3
+
+- Compatible with CouchPotato 0.5.6
+
 0.6.2
 
 - Decorate conflict exceptions with information about the conflict

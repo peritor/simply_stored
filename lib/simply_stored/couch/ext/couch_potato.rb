@@ -29,11 +29,11 @@ module CouchPotato
       if run_callbacks
         document.run_callbacks :destroy do
           document._deleted = true
-          database.delete_doc document.to_hash
+          couchrest_database.delete_doc document.to_hash
         end
       else
         document._deleted = true
-        database.delete_doc document.to_hash
+        couchrest_database.delete_doc document.to_hash
       end
       document._id = nil
       document._rev = nil
