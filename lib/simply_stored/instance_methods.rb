@@ -16,13 +16,17 @@ module SimplyStored
 
     def save(validate = true)
       retry_on_conflict do
-        CouchPotato.database.save_document(self, validate)
+        retry_on_connection_error do
+          CouchPotato.database.save_document(self, validate)
+        end
       end
     end
 
     def save!
       retry_on_conflict do
-        CouchPotato.database.save_document!(self)
+        retry_on_connection_error do
+          CouchPotato.database.save_document!(self)
+        end
       end
     end
 
@@ -73,7 +77,21 @@ module SimplyStored
     end
 
   protected
-    
+
+    def retry_on_connection_error(max_retries = 2, &blk)
+      retry_count = 0
+      begin
+        blk.call
+      rescue Errno::ECONNREFUSED => e
+        if retry_count < max_retries
+          retry_count += 1
+          retry
+        else
+          raise e
+        end
+      end
+    end
+
     def retry_on_conflict(max_retries = 2, &blk)
       retry_count = 0
       begin

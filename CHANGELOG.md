@@ -1,6 +1,10 @@
 Changelog
 =============
 
+0.6.5
+
+- Retry on connection refused errors, useful when CouchDB takes a break in excessive test runs that teardown/re-create many databases
+
 0.6.4
 
 - Restore Ruby 1.9.2 compatibility
