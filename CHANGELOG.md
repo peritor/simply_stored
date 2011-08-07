@@ -1,6 +1,10 @@
 Changelog
 =============
 
+0.6.4
+
+- Restore Ruby 1.9.2 compatibility
+
 0.6.3
 
 - Compatible with CouchPotato 0.5.6
