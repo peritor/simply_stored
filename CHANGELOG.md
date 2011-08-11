@@ -1,6 +1,10 @@
 Changelog
 =============
 
+0.6.8
+
+- Lax restriction on ActiveSupport version
+
 0.6.7
 
 - Rebuild with Ruby 1.8
