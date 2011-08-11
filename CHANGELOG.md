@@ -1,6 +1,10 @@
 Changelog
 =============
 
+0.6.7
+
+- Rebuild with Ruby 1.8
+
 0.6.6
 
 - Bump supported CouchPotato version
