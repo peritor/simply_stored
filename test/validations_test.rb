@@ -24,7 +24,7 @@ class ValidationsTest < Test::Unit::TestCase
       should "add an error message" do
         category = Category.new(:name => "other")
         category.valid?
-        assert_match(/must be one or more of food, drinks, party/, category.errors.full_messages.first)
+        assert_match(/Name is not included in the list/, category.errors.full_messages.first)
       end
     
       should "allow blank" do
@@ -110,7 +110,7 @@ class ValidationsTest < Test::Unit::TestCase
       should 'have a nice error message' do
         assert UniqueUser.create(:name => "Host Master")
         user = UniqueUser.create(:name => "Host Master")
-        assert_equal "Name is already taken", user.errors.on(:name)
+        assert_equal ["has already been taken"], user.errors[:name]
       end
       
       should 'create a view to check with' do

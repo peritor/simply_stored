@@ -1,6 +1,4 @@
-require 'validatable'
 require 'couch_potato'
-
 require 'active_support'
 unless {}.respond_to?(:assert_valid_keys)
   require 'active_support/core_ext'
@@ -19,7 +17,9 @@ require 'simply_stored/couch/has_one'
 require 'simply_stored/couch/ext/couch_potato'
 require 'simply_stored/couch/views'
 
-CouchPotato::Config.validation_framework = :validatable
+if defined?(I18n)
+  I18n.load_path << File.expand_path(File.dirname(__FILE__) + '/couch/locale/en.yml')
+end
 
 module SimplyStored
   module Couch
