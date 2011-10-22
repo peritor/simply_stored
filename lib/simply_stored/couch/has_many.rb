@@ -61,7 +61,11 @@ module SimplyStored
           klass = self.class.get_class_from_name(name)
           raise ArgumentError, "expected #{klass} got #{value.class}" unless value.is_a?(klass)
           
-          value.send("#{self.class.foreign_key}=", id)
+          if !options[:foreign_key].blank?          
+            value.send("#{options[:foreign_key]}=", id)
+          else
+            value.send("#{self.class.foreign_key}=", id)
+          end
           value.save(false)
           
           cached_results = send("_get_cached_#{name}")[:all]
