@@ -1,3 +1,8 @@
+Fixes for the custom associations
+
+------------------------------
+
+
 Convenience layer for CouchDB on top of CouchPotato.
 
 SimplyStored allows you to persist your objects to CouchDB using an ActiveRecord-like syntax.
