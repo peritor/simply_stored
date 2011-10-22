@@ -1,5 +1,6 @@
 Fixes for the custom associations
 
+------------------------------
 
 
 Convenience layer for CouchDB on top of CouchPotato.
