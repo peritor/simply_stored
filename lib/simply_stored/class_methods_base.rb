@@ -2,7 +2,12 @@ module SimplyStored
   module ClassMethods
     module Base
       def get_class_from_name(klass_name)
+      
         klass_name.to_s.gsub('__','/').classify.constantize
+        
+        rescue NameError
+          klass_name.constantize
+        
       end
       
       def foreign_key
