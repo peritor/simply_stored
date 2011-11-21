@@ -329,7 +329,7 @@ If auto_conflict_resolution_on_save is enabled, something like this will work:
 License
 =============
 
-SimplyStored is licensed under the OpenBSD / two-clause BSD license, modeled after the ISC license. See LICENSE.txt
+SimplyStored is licensed under the Apache 2.0 license. See LICENSE.txt
 
 About
 =============
