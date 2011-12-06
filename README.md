@@ -1,3 +1,12 @@
+Warning
+============
+
+Development work as stopped as we don't use SimplyStored anymore. Please do not expect any future commits and fixes.
+
+
+Introduction
+============
+
 Convenience layer for CouchDB on top of CouchPotato.
 
 SimplyStored allows you to persist your objects to CouchDB using an ActiveRecord-like syntax.
