@@ -7,10 +7,10 @@ module SimplyStored
              if(doc.ruby_class && doc.ruby_class == '#{@klass.name}') {
                if (#{formatted_key(key)}.constructor.toString().match(/function Array()/)) {
                  for (var i in #{formatted_key(key)}) {
-                   emit(#{formatted_key(key)}[i], null);
+                   emit(#{formatted_key(key)}[i], 1);
                  }
                } else {
-                 emit(#{formatted_key(key)}, null);
+                 emit(#{formatted_key(key)}, 1);
                }
              }
            }"

@@ -1,7 +1,16 @@
+Due to the stop in development of the original creators of simply_stored, we've decided to maintain a fork with our fixes for it.
+
+
+Fixes:
 Fixes for the custom associations
 
-------------------------------
 
+
+
+
+
+Introduction
+============
 
 Convenience layer for CouchDB on top of CouchPotato.
 
@@ -334,7 +343,7 @@ If auto_conflict_resolution_on_save is enabled, something like this will work:
 License
 =============
 
-SimplyStored is licensed under the OpenBSD / two-clause BSD license, modeled after the ISC license. See LICENSE.txt
+SimplyStored is licensed under the Apache 2.0 license. See LICENSE.txt
 
 About
 =============

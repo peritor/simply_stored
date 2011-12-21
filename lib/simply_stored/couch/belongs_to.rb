@@ -86,7 +86,7 @@ module SimplyStored
             end
             
             define_method "#{name}_changed?" do
-              self.send("#{name}_id") != self.send("#{name}_id_was")
+              self.send("#{name}_id_changed?")
             end
           end
         end

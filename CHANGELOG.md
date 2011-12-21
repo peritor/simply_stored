@@ -1,6 +1,12 @@
 Changelog
 =============
 
+- re-license under Apache 2.0
+
+0.7.0
+
+- Compatible with Rails 3.1 --> Requires ActiveModel and ActiveSupport 3.1
+
 0.6.8
 
 - Lax restriction on ActiveSupport version

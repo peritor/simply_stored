@@ -5,7 +5,7 @@ unless defined?(SimplyStored)
   require File.expand_path(File.dirname(__FILE__) + '/simply_stored/class_methods_base')
 
   module SimplyStored
-    VERSION = '0.6.8'
+    VERSION = '0.7.0rc7'
     class Error < RuntimeError; end
     class RecordNotFound < RuntimeError; end
   end
