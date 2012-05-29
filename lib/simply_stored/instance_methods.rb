@@ -1,6 +1,10 @@
 module SimplyStored
   module InstanceMethods
-    
+
+    def self.included(base) #:nodoc:
+      base.send :include, ActiveModel::Conversion
+    end
+
     def initialize(attributes = {}, &blk)
       super(_remove_protected_attributes(attributes))
       blk.call(self) if blk
