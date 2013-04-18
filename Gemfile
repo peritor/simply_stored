@@ -1,4 +1,4 @@
-source :rubygems
+source 'https://rubygems.org'
 
 gem "uuidtools"
 gem 'rest-client', '1.6.1', :require => 'restclient'
