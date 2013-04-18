@@ -156,6 +156,16 @@ class S3Test < Test::Unit::TestCase
         @log_item.save
         assert_equal "http://bucket-for-monsieur.s3.amazonaws.com/#{@log_item.s3_attachment_key(:log_data)}", @log_item.log_data_url
       end
+
+      context "when https option passed" do
+        should "save generate the https version url for the attachment" do
+          @log_item._s3_options[:log_data][:bucket] = 'bucket-for-monsieur'
+          @log_item._s3_options[:log_data][:permissions] = 'public-read'
+          @log_item._s3_options[:log_data][:https] = true
+          @log_item.save
+          assert_equal "https://bucket-for-monsieur.s3.amazonaws.com/#{@log_item.s3_attachment_key(:log_data)}", @log_item.log_data_url
+        end
+      end
     
       should "add a short-lived access key for private attachments" do
         @log_item._s3_options[:log_data][:bucket] = 'bucket-for-monsieur'
