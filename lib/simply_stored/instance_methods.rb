@@ -252,9 +252,9 @@ module SimplyStored
     end
     
     def find_associated(from, to, options = {})
+      options.merge!(from.constantize.build_pagination_params)
       foreign_key = (options.delete(:foreign_key) || self.class.name.singularize.underscore.foreign_key ).gsub(/_id$/, '')
       view_options = _default_view_options(options)
-
       if options[:with_deleted]
         CouchPotato.database.view(
           self.class.get_class_from_name(from).send(

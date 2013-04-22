@@ -8,6 +8,7 @@ module SimplyStored
 
       def define_has_many_getter(name, options)
         define_method(name) do |*args|
+          options[:class_name].constantize.page_params = args.first if args.first.is_a? Hash
           local_options = args.first && args.first.is_a?(Hash) && args.first
           forced_reload, with_deleted, limit, descending = extract_association_options(local_options)
 

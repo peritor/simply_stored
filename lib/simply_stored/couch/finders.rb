@@ -7,15 +7,21 @@ module SimplyStored
         if options && order = options.delete(:order)
           options[:descending] = true if order == :desc
         end
-        
+
         with_deleted = options.delete(:with_deleted)
-        
+        pagination_params = 
+        if ancestors.include? SimplyStored::Couch::Paginator
+          build_pagination_params
+        else
+          {}
+        end
+
         case what
         when :all
           if with_deleted || !soft_deleting_enabled?
-            CouchPotato.database.view(all_documents(*args))
+            CouchPotato.database.view(all_documents(*args, pagination_params))
           else
-            CouchPotato.database.view(all_documents_without_deleted(options.update(:include_docs => true)))
+            CouchPotato.database.view(all_documents_without_deleted(options.update(:include_docs => true).merge(pagination_params)))
           end
         when :first
           if with_deleted || !soft_deleting_enabled?
