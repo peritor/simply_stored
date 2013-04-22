@@ -284,3 +284,21 @@ class Author
 
   has_and_belongs_to_many :books, :storing_keys => false
 end
+
+class PaginatedUser
+  include SimplyStored::Couch
+  include SimplyStored::Couch::Paginator
+
+  has_many :paginated_articles
+
+  property :name
+end
+
+class PaginatedArticle
+  include SimplyStored::Couch
+  include SimplyStored::Couch::Paginator
+
+  belongs_to :paginated_user
+
+  property :title
+end

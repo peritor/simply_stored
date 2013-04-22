@@ -1,7 +1,12 @@
-Warning
-============
+Due to the stop in development of the original creators of simply_stored, we've decided to maintain a fork with our fixes for it.
 
-Development work as stopped as we don't use SimplyStored anymore. Please do not expect any future commits and fixes.
+
+Fixes:
+Fixes for the custom associations
+
+
+
+
 
 
 Introduction
