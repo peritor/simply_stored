@@ -15,8 +15,8 @@ module SimplyStored
 
         def build_pagination_params
           hash = {}
-          hash[:skip] = page_params[:page].to_i * page_params[:per_page].to_i 
-          hash[:limit] = page_params[:per_page]
+          hash[:skip] = page_params[:page].to_i * page_params[:per_page].to_i if page_params[:page] and page_params[:per_page]
+          hash[:limit] = page_params[:per_page] if page_params[:per_page]
           hash
         end
         
