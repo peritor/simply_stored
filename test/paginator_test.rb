@@ -60,14 +60,20 @@ class Paginator < Test::Unit::TestCase
         assert_equal @paginated_user.paginated_articles(:page => 1, :per_page => 10).count, 10
         assert_equal @paginated_user.paginated_articles(:page => 3, :per_page => 10).count, 10
         assert_equal @paginated_user.paginated_articles(:per_page => 10).count, 10
-
       end
     end
 
     context "when per_page is greater than total number of items" do
-      should "return all items" do
-        assert_equal @paginated_user.paginated_articles(:page => 1, :per_page => 101).count, 50
+      should "return no items" do
+        assert_equal @paginated_user.paginated_articles(:page => 1, :per_page => 101).count, 0
       end
-    end    
+    end  
+
+    context "when page is out of range" do
+      should "return no items" do
+        assert_equal @paginated_user.paginated_articles(:page => 1000, :per_page => 10).count, 0  
+      end
+    end  
+
   end
 end
