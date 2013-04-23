@@ -239,6 +239,7 @@ module SimplyStored
         view_options[:startkey] = [id]
         view_options[:endkey] = ["#{id}\u9999"]
       end
+      view_options[:skip] = options[:skip] if options[:skip]
       view_options[:limit] = options[:limit] if options[:limit]
       view_options
     end
@@ -252,9 +253,11 @@ module SimplyStored
     end
     
     def find_associated(from, to, options = {})
+      if from.is_a?(String) and from.constantize.ancestors.include? SimplyStored::Couch::Paginator
+        options.merge!(from.constantize.build_pagination_params)
+      end
       foreign_key = (options.delete(:foreign_key) || self.class.name.singularize.underscore.foreign_key ).gsub(/_id$/, '')
       view_options = _default_view_options(options)
-
       if options[:with_deleted]
         CouchPotato.database.view(
           self.class.get_class_from_name(from).send(
