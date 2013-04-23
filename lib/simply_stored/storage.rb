@@ -138,7 +138,11 @@ module SimplyStored
           if _s3_options[name][:permissions] == 'private'
             RightAws::S3Generator.new(_s3_options[name][:access_key], _s3_options[name][:secret_access_key], :multi_thread => true, :ca_file => _s3_options[name][:ca_file]).bucket(_s3_options[name][:bucket]).get(s3_attachment_key(name), 5.minutes)
           else
-            "http://#{_s3_options[name][:bucket].to_s}.s3.amazonaws.com/#{s3_attachment_key(name)}"
+            if _s3_options[name][:https]
+              "https://#{_s3_options[name][:bucket].to_s}.s3.amazonaws.com/#{s3_attachment_key(name)}"
+            else
+              "http://#{_s3_options[name][:bucket].to_s}.s3.amazonaws.com/#{s3_attachment_key(name)}"
+            end
           end
         end
       end

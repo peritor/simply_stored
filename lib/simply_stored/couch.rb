@@ -16,6 +16,7 @@ require 'simply_stored/couch/has_and_belongs_to_many'
 require 'simply_stored/couch/has_one'
 require 'simply_stored/couch/ext/couch_potato'
 require 'simply_stored/couch/views'
+require 'simply_stored/couch/paginator'
 
 if defined?(I18n)
   I18n.load_path << File.expand_path(File.dirname(__FILE__) + '/couch/locale/en.yml')
@@ -49,6 +50,16 @@ module SimplyStored
       include SimplyStored::Couch::FindBy
       include SimplyStored::Storage::ClassMethods
       
+      @@page_params = {}
+
+      def page_params
+        @@page_params
+      end
+
+      def page_params= options = {}
+        @@page_params = options
+      end
+
       def create(attributes = {}, &blk)
         instance = new(attributes, &blk)
         instance.save
@@ -132,9 +143,8 @@ module SimplyStored
       with_deleted = false
       limit = nil
       descending = false
-      
       if local_options
-        local_options.assert_valid_keys(:force_reload, :with_deleted, :limit, :order)
+        local_options.assert_valid_keys(:force_reload, :with_deleted, :limit, :order, :page, :per_page)
         forced_reload = local_options.delete(:force_reload)
         with_deleted = local_options[:with_deleted]
         limit = local_options[:limit]
