@@ -3,7 +3,7 @@ source 'https://rubygems.org'
 gem "uuidtools"
 gem 'rest-client', '1.6.1', :require => 'restclient'
 gem 'couchrest', '1.0.1'
-gem 'couch_potato', '0.6.0'
+gem 'couch_potato', :git => 'git@github.com:ashishbista/couch_potato.git'
 gem 'shoulda'
 gem 'shoulda-addons'
 gem 'mocha'
