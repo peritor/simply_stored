@@ -340,6 +340,41 @@ If auto_conflict_resolution_on_save is enabled, something like this will work:
     other_client.title 
     # => 'version 2'
 
+Pagination
+=============
+
+SimplyStored supports pagination.
+
+    class Project
+      include SimplyStored::Couch
+      include SimplyStored::Couch::Paginator
+
+      property :title
+
+      belongs_to :user
+      
+    end
+
+    class User
+      include SimplyStored::Couch
+      include SimplyStored::Couch::Paginator
+
+      property :name
+      
+      has_many :projects
+      
+    end
+
+    User.build_pagination(:page => 1, :per_page => 10) # -> This will not make a database call, rather it just builds criteria for pagination
+
+    User.build_pagination(:page =>1, :per_page => 10).all # -> This will make a call to database
+    User.build_pagination(:page =>1, :per_page => 10).find_all_by_name('A name')
+
+    user.projects(:page => 1, :per_page => 10) # -> for has_many association
+
+    <%= will_paginate @projects %> # -> In view, it works with will_paginate to generate pagination links
+
+
 License
 =============
 
