@@ -1,12 +1,3 @@
-GIT
-  remote: git@github.com:ashishbista/couch_potato.git
-  revision: 94ff05b9a91abe3a9c45b76d96867587b2a1689f
-  specs:
-    couch_potato (0.7.1)
-      activemodel
-      couchrest (>= 1.0.1)
-      json (~> 1.6)
-
 GEM
   remote: https://rubygems.org/
   specs:
@@ -19,6 +10,10 @@ GEM
     bourne (1.4.0)
       mocha (~> 0.13.2)
     builder (3.0.4)
+    couch_potato (0.6.0)
+      activemodel
+      couchrest (>= 1.0.1)
+      json (~> 1.6.0)
     couchrest (1.0.1)
       json (>= 1.4.6)
       mime-types (>= 1.15)
@@ -44,6 +39,7 @@ GEM
       activesupport (>= 3.0.0)
       bourne (~> 1.3)
     uuidtools (2.1.3)
+    will_paginate (3.0.2)
 
 PLATFORMS
   ruby
@@ -51,7 +47,7 @@ PLATFORMS
 DEPENDENCIES
   activemodel (> 3.1.0)
   activesupport (> 3.1.0)
-  couch_potato!
+  couch_potato (= 0.6.0)
   couchrest (= 1.0.1)
   mocha
   rest-client (= 1.6.1)
@@ -59,3 +55,4 @@ DEPENDENCIES
   shoulda
   shoulda-addons
   uuidtools
+  will_paginate
