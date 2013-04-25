@@ -13,6 +13,7 @@ class Paginator < Test::Unit::TestCase
     context "when per_page is missing" do
       should "return 10 items" do
         assert_equal PaginatedUser.build_pagination.all.count, 10
+
         assert_equal PaginatedUser.build_pagination(:page => 2).all.count, 10
       end
 
@@ -27,7 +28,7 @@ class Paginator < Test::Unit::TestCase
 
     context "when per_page more than number of total items" do
       should "return items as per_page" do
-        assert_equal PaginatedUser.build_pagination(:per_page => 100).all.count, 0
+        assert_equal PaginatedUser.build_pagination(:per_page => 100).all.count, 50
         assert_equal PaginatedUser.build_pagination(:page => 2, :per_page => 99).all.count, 0
       end
     end
@@ -64,8 +65,8 @@ class Paginator < Test::Unit::TestCase
     end
 
     context "when per_page is greater than total number of items" do
-      should "return no items" do
-        assert_equal @paginated_user.paginated_articles(:page => 1, :per_page => 101).count, 0
+      should "return all items" do
+        assert_equal @paginated_user.paginated_articles(:page => 1, :per_page => 101).count, 50
       end
     end  
 

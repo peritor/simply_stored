@@ -15,13 +15,22 @@ module SimplyStored
         else
           {}
         end
-
         case what
         when :all
           if with_deleted || !soft_deleting_enabled?
-            CouchPotato.database.view(all_documents(*args, pagination_params))
+            results = CouchPotato.database.view(all_documents(*args, pagination_params))
+            unless pagination_params.empty?
+              SimplyStored::Couch::Helper.paginate(results, pagination_params) # Converts results into will_paginate array
+            else
+              results
+            end
           else
-            CouchPotato.database.view(all_documents_without_deleted(options.update(:include_docs => true).merge(pagination_params)))
+            results = CouchPotato.database.view(all_documents_without_deleted(options.update(:include_docs => true).merge(pagination_params)))
+            unless pagination_params.empty?
+              SimplyStored::Couch::Helper.paginate(results, pagination_params)
+            else
+              results
+            end
           end
         when :first
           if with_deleted || !soft_deleting_enabled?

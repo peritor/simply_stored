@@ -253,19 +253,31 @@ module SimplyStored
     end
     
     def find_associated(from, to, options = {})
+      pagination_params = {}
       if from.is_a?(String) and from.constantize.ancestors.include? SimplyStored::Couch::Paginator
-        options.merge!(from.constantize.build_pagination_params)
+        pagination_params = from.constantize.build_pagination_params
+        options.merge!(pagination_params)
       end
       foreign_key = (options.delete(:foreign_key) || self.class.name.singularize.underscore.foreign_key ).gsub(/_id$/, '')
       view_options = _default_view_options(options)
       if options[:with_deleted]
-        CouchPotato.database.view(
+        results = CouchPotato.database.view(
           self.class.get_class_from_name(from).send(
             "association_#{from.to_s.singularize.underscore}_belongs_to_#{foreign_key}_with_deleted", view_options))
+        unless pagination_params.empty?
+          SimplyStored::Couch::Helper.paginate(results, pagination_params)
+        else
+          results
+        end
       else
-        CouchPotato.database.view(
+        results = CouchPotato.database.view(
           self.class.get_class_from_name(from).send(
             "association_#{from.to_s.singularize.underscore}_belongs_to_#{foreign_key}", view_options))
+        unless pagination_params.empty?
+          SimplyStored::Couch::Helper.paginate(results, pagination_params)
+        else
+          results
+        end
       end
     end
     
