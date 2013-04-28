@@ -68,7 +68,7 @@ Add to your Gemfile:
     gem 'actionpack'
     gem 'actionmailer'
     gem 'activemodel'
-    gem 'simply_stored', :require => 'simply_stored/couch'
+    gem 'simply_stored', :git => 'git@github.com:Nextfave/simply_stored.git', :require => 'simply_stored/couch'
 
 Please also see the installation info of [CouchPotato](https://github.com/langalex/couch_potato)
 
@@ -265,6 +265,7 @@ It uses RightAWS for the interaction with the EC2 API:
     class Log
       include SimplyStored::Couch
       has_s3_attachment :data, :bucket => 'the-bucket-name',
+                               :https => true,
                                :access_key => 'my-AWS-key-id',
                                :secret_access_key => 'psst!-secret',
                                :location => :eu,
@@ -351,8 +352,7 @@ SimplyStored supports pagination.
 
       property :title
 
-      belongs_to :user
-      
+      belongs_to :user     
     end
 
     class User
@@ -361,8 +361,7 @@ SimplyStored supports pagination.
 
       property :name
       
-      has_many :projects
-      
+      has_many :projects    
     end
 
     User.build_pagination(:page => 1, :per_page => 10) # -> This will not make a database call, rather it just builds criteria for pagination
