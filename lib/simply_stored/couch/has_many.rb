@@ -8,6 +8,7 @@ module SimplyStored
 
       def define_has_many_getter(name, options)
         define_method(name) do |*args|
+          options[:class_name].constantize.page_params = args.first if args.first.is_a? Hash
           local_options = args.first && args.first.is_a?(Hash) && args.first
           forced_reload, with_deleted, limit, descending = extract_association_options(local_options)
 
@@ -58,10 +59,18 @@ module SimplyStored
       
       def define_has_many_setter_add(name, options)
         define_method("add_#{name.to_s.singularize}") do |value|
-          klass = self.class.get_class_from_name(name)
+          if !options[:class_name].blank?
+            klass = self.class.get_class_from_name(options[:class_name])
+          else
+            klass = self.class.get_class_from_name(name)          
+          end
           raise ArgumentError, "expected #{klass} got #{value.class}" unless value.is_a?(klass)
           
-          value.send("#{self.class.foreign_key}=", id)
+          if !options[:foreign_key].blank?          
+            value.send("#{options[:foreign_key]}=", id)
+          else
+            value.send("#{self.class.foreign_key}=", id)
+          end
           value.save(false)
           
           cached_results = send("_get_cached_#{name}")[:all]

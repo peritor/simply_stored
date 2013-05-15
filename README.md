@@ -1,7 +1,12 @@
-Warning
-============
+Due to the stop in development of the original creators of simply_stored, we've decided to maintain a fork with our fixes for it.
 
-Development work as stopped as we don't use SimplyStored anymore. Please do not expect any future commits and fixes.
+
+Fixes:
+Fixes for the custom associations
+
+
+
+
 
 
 Introduction
@@ -63,7 +68,7 @@ Add to your Gemfile:
     gem 'actionpack'
     gem 'actionmailer'
     gem 'activemodel'
-    gem 'simply_stored', :require => 'simply_stored/couch'
+    gem 'simply_stored', :git => 'git@github.com:Nextfave/simply_stored.git', :require => 'simply_stored/couch'
 
 Please also see the installation info of [CouchPotato](https://github.com/langalex/couch_potato)
 
@@ -260,6 +265,7 @@ It uses RightAWS for the interaction with the EC2 API:
     class Log
       include SimplyStored::Couch
       has_s3_attachment :data, :bucket => 'the-bucket-name',
+                               :https => true,
                                :access_key => 'my-AWS-key-id',
                                :secret_access_key => 'psst!-secret',
                                :location => :eu,
@@ -334,6 +340,39 @@ If auto_conflict_resolution_on_save is enabled, something like this will work:
     
     other_client.title 
     # => 'version 2'
+
+Pagination
+=============
+
+SimplyStored supports pagination.
+
+    class Project
+      include SimplyStored::Couch
+      include SimplyStored::Couch::Paginator
+
+      property :title
+
+      belongs_to :user     
+    end
+
+    class User
+      include SimplyStored::Couch
+      include SimplyStored::Couch::Paginator
+
+      property :name
+      
+      has_many :projects    
+    end
+
+    User.build_pagination(:page => 1, :per_page => 10) # -> This will not make a database call, rather it just builds criteria for pagination
+
+    User.build_pagination(:page =>1, :per_page => 10).all # -> This will make a call to database
+    User.build_pagination(:page =>1, :per_page => 10).find_all_by_name('A name')
+
+    user.projects(:page => 1, :per_page => 10) # -> for has_many association
+
+    <%= will_paginate @projects %> # -> In view, it works with will_paginate to generate pagination links
+
 
 License
 =============

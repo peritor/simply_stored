@@ -28,9 +28,19 @@ module SimplyStored
             
             if soft_deleting_enabled? && !with_deleted
               key_args = key_args + [nil] # deleted_at
-              CouchPotato.database.view(send(without_deleted_view_name, :key => (key_args.size == 1 ? key_args.first : key_args), :limit => 1, :include_docs => true)).first
+              unless pagination_params.empty?
+              results = CouchPotato.database.view(send(without_deleted_view_name, :key => (key_args.size == 1 ? key_args.first : key_args), :include_docs => true, :skip => pagination_params[:skip], :limit => [:limit]))
+              SimplyStored::Couch::Helper.paginate(results, pagination_params) # Converts results into will_paginate array
+              else
+                CouchPotato.database.view(send(without_deleted_view_name, :key => (key_args.size == 1 ? key_args.first : key_args), :include_docs => true))
+              end
             else
-              CouchPotato.database.view(send(view_name, :key => (key_args.size == 1 ? key_args.first : key_args), :limit => 1, :include_docs => true)).first
+              unless pagination_params.empty?
+                results = CouchPotato.database.view(send(view_name, :key => (key_args.size == 1 ? key_args.first : key_args), :include_docs => true, :skip => pagination_params[:skip], :limit => pagination_params[:limit]))
+                SimplyStored::Couch::Helper.paginate(results, pagination_params) # Converts results into will_paginate array
+              else
+                CouchPotato.database.view(send(view_name, :key => (key_args.size == 1 ? key_args.first : key_args), :include_docs => true))
+              end
             end
           end
         end
