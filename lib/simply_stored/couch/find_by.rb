@@ -25,7 +25,12 @@ module SimplyStored
             with_deleted = options.delete(:with_deleted)
             
             raise ArgumentError, "Too many or too few arguments, require #{keys.inspect}" unless keys.size == key_args.size            
-            
+            pagination_params = 
+            if ancestors.include? SimplyStored::Couch::Paginator
+              build_pagination_params
+            else
+              {}
+            end
             if soft_deleting_enabled? && !with_deleted
               key_args = key_args + [nil] # deleted_at
               unless pagination_params.empty?
