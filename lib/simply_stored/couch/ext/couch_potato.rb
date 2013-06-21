@@ -26,6 +26,7 @@ module CouchPotato
 
     # the original implementation does not delete if callbacks are skipped
     def destroy_document(document, run_callbacks = true)
+      invalidate_cached_results(document)
       if run_callbacks
         document.run_callbacks :destroy do
           document._deleted = true
