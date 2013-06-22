@@ -62,6 +62,7 @@ module SimplyStored
     end
 
     def reload
+      CouchPotato.database.invalidate_cached_results(self)
       instance = self.class.find(_id, :with_deleted => true)
       instance.attributes.each do |attribute, value|
         send "#{attribute}=", value
