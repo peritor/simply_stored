@@ -408,7 +408,7 @@ For finders:
     User.all(:eager_load => [:company]) # -> This also loads company of all users at the same time  when it fetches user objects.
 
 For associations:
-    project.users(:eager_load => [:company]
+    project.users(:eager_load => [:company])
     
     
 
