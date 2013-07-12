@@ -374,6 +374,44 @@ SimplyStored supports pagination.
     <%= will_paginate @projects %> # -> In view, it works with will_paginate to generate pagination links
 
 
+Eager Loading
+=============
+
+SimplyStored now supports eager loading. This feature helps to save number of calls to couchdb server.
+
+    class Project
+      include SimplyStored::Couch
+
+      property :name
+
+      has_many :users     
+    end
+
+    class Company
+      include SimplyStored::Couch
+
+      property :name
+
+    end
+
+    class User
+      include SimplyStored::Couch
+
+      property :name
+      
+      belongs_to :project
+      belongs_to :company
+    end
+    
+
+For finders:
+    User.all(:eager_load => [:company]) # -> This also loads company of all users at the same time  when it fetches user objects.
+
+For associations:
+    project.users(:eager_load => [:company]
+    
+    
+
 License
 =============
 
