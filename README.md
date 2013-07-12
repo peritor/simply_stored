@@ -377,7 +377,7 @@ SimplyStored supports pagination.
 Eager Loading
 =============
 
-SimplyStored now supports eager loading. This feature helps to save number of calls to couchdb server.
+SimplyStored now supports eager loading. This feature helps to reduce number of calls to couchdb server.
 
     class Project
       include SimplyStored::Couch
