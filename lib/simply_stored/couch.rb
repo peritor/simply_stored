@@ -144,7 +144,7 @@ module SimplyStored
       limit = nil
       descending = false
       if local_options
-        local_options.assert_valid_keys(:force_reload, :with_deleted, :limit, :order, :page, :per_page)
+        local_options.assert_valid_keys(:force_reload, :with_deleted, :limit, :order, :page, :per_page, :eager_load)
         forced_reload = local_options.delete(:force_reload)
         with_deleted = local_options[:with_deleted]
         limit = local_options[:limit]
