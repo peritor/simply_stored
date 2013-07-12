@@ -33,7 +33,28 @@ module SimplyStored
         WillPaginate::Collection.create(page, per_page, total) do |pager|
           pager.replace results[pager.offset, pager.per_page].to_a
         end
-      end     
+      end
+
+      def self.eager_load(results, params)
+
+        return if results.empty?
+        
+        params.each do |param|
+          param_id = "#{param}_id".to_sym
+
+          raise ArgumentError, "No such relation: #{param}" unless results.first.respond_to?(param_id)
+          
+          param_ids = results.map(&param_id)
+          objs = CouchPotato.database.load param_ids.compact
+          grouped_objs = objs.group_by(&:id)
+
+          results.each do |result|
+            result.send("#{param}=", grouped_objs[result.send(param_id)].try(:first) ) if result.send(param_id)
+          end
+
+        end
+
+      end    
     end
 
   end
