@@ -3,22 +3,37 @@ module SimplyStored
     module Finders
       def find(*args)
         what = args.shift
+
+        eager_load_params = nil
+        args.each do |arg| 
+          if arg[:eager_load]
+            eager_load_params = args.delete(arg)
+          end
+        end
+
         options = args.last.is_a?(Hash) ? args.last : {}
         if options && order = options.delete(:order)
           options[:descending] = true if order == :desc
         end
 
         with_deleted = options.delete(:with_deleted)
+        
         pagination_params = 
         if ancestors.include? SimplyStored::Couch::Paginator
           build_pagination_params
         else
           {}
         end
+
         case what
         when :all
           if with_deleted || !soft_deleting_enabled?
             results = CouchPotato.database.view(all_documents(*args, pagination_params))
+
+            if eager_load_params
+              SimplyStored::Couch::Helper.eager_load(results, eager_load_params[:eager_load])
+            end
+
             unless pagination_params.empty?
               SimplyStored::Couch::Helper.paginate(results, pagination_params) # Converts results into will_paginate array
             else
@@ -26,6 +41,9 @@ module SimplyStored
             end
           else
             results = CouchPotato.database.view(all_documents_without_deleted(options.update(:include_docs => true).merge(pagination_params)))
+            
+            SimplyStored::Couch::Helper.eager_load(results, eager_load_params[:eager_load]) if eager_load_params
+
             unless pagination_params.empty?
               SimplyStored::Couch::Helper.paginate(results, pagination_params)
             else
