@@ -41,26 +41,40 @@ class FinderTest < Test::Unit::TestCase
     end
     
     context "to find one instance" do
-      should 'return one user when calling first' do
-        user = User.create(:title => "Mr.")
-        assert_equal user, User.first
-      end
-      
-      should 'understand the order' do
-        assert_nothing_raised do
-          User.first(:order => :desc)
+      context "when multiple instances exist" do
+        setup do
+          User.create(:title => "Mr.")
+          User.create(:title => "Mrs.")
+          @all = User.all
+          @first = @all.first
+          @last = @all.last
+        end
+
+        should 'return the first user for #find' do
+          assert_equal @first, User.find(:first)
+        end
+
+        should 'return the first user for #first' do
+          assert_equal @first, User.first
+        end
+
+        should 'return the last user for #find and descending order' do
+          assert_equal @last, User.find(:first, :order => :desc)
+        end
+
+        should 'return the last user for #last' do
+          assert_equal @last, User.last
         end
       end
-      
-      should 'find the last as a reverse first' do
-        User.expects(:find).with(:first, :order => :desc)
-        User.last
-      end
-      
-      should 'return nil when no user found' do
-        assert_nil User.first
+
+      context 'When no rows exist' do
+        should 'return nil for first' do
+          assert_nil User.first
+        end
       end
     end
+
+
     
     context "when finding with just an identifier" do
       should "find just one instance" do
@@ -183,6 +197,30 @@ class FinderTest < Test::Unit::TestCase
         end
       end
     end      
+
+    context 'The #first method' do
+      should 'pass default arguments to #find' do
+        User.expects(:find).with(:first)
+        User.first
+      end
+
+      should 'merge passed options to #find' do
+        User.expects(:find).with(:first, :limit => 2)
+        User.first(:limit => 2)
+      end
+    end
+
+    context 'The #last method' do
+      should 'pass default arguments to #last' do
+        User.expects(:find).with(:first, :order => :desc)
+        User.last
+      end
+
+      should 'merge passed options to #last' do
+        User.expects(:find).with(:first, :order => :desc, :limit => 2)
+        User.last(:limit => 2)
+      end
+    end
   end
 
 end
